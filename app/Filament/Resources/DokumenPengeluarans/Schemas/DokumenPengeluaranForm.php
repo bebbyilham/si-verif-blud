@@ -64,7 +64,12 @@ class DokumenPengeluaranForm
                             <div style="font-size: 12px; line-height: 1.35;">
                                 <span style="font-weight: 800; color: #b45309; letter-spacing: 0.01em;">NOTED :</span>
                                 <strong style="color: #92400e; font-weight: 700;">Pastikan Kelengkapan Dokumen</strong>
-                                <a href="' . url('/admin/kelengkapan-berkas') . '" target="_blank" style="font-size: 11.5px; color: #b45309; font-weight: 700; text-decoration: underline; display: block; margin-top: 1px; transition: color 0.15s;">(Cek Kembali Menu Kelengkapan Berkas ↗)</a>
+                                <a href="' . url('/admin/kelengkapan-berkas') . '" target="_blank" style="font-size: 11.5px; color: #b45309; font-weight: 700; text-decoration: underline; display: flex; align-items: center; gap: 4px; margin-top: 1px; transition: color 0.15s;">
+                                    (Cek Kembali Menu Kelengkapan Berkas 
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 12px; height: 12px;">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                    </svg>)
+                                </a>
                             </div>
                         </div>
                     ')),
