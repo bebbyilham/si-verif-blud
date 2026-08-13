@@ -8,4 +8,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateDokumenPengeluaran extends CreateRecord
 {
     protected static string $resource = DokumenPengeluaranResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

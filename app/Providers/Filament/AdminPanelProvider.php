@@ -34,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('16rem')
             ->spa()
+            ->darkMode(false)
             ->colors([
                 'primary' => \Filament\Support\Colors\Color::Indigo,
             ])

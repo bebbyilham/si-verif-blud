@@ -27,6 +27,7 @@ class DokumenPengeluaran extends Model
 
     protected $casts = [
         'file_path' => 'array',
+        'nominal' => 'float',
     ];
 
     protected static function booted(): void
