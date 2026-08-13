@@ -35,6 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('16rem')
             ->spa()
             ->darkMode(false)
+            ->globalSearch(false)
             ->colors([
                 'primary' => \Filament\Support\Colors\Color::Indigo,
             ])

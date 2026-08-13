@@ -1,388 +1,1665 @@
 <x-filament-panels::page>
     @php
-        $categories = [
-            'gaji_asn' => [
-                'nama' => 'Pembayaran Gaji ASN',
-                'kode' => 'SPP-LS Gaji',
-                'icon' => 'heroicon-o-users',
-                'deskripsi' => 'Kelengkapan berkas untuk pencairan belanja gaji induk, tunjangan ASN, dan perubahan data pegawai.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Kuitansi induk untuk setiap SPP-LS gaji dll yang ditandatangani oleh PA, Bendahara dan salah satu penerima gaji',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Asli Bertandatangan',
-                        'keterangan' => 'Kuitansi induk harus ditandatangani oleh Pengguna Anggaran (PA), Bendahara Pengeluaran, dan perwakilan penerima gaji.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Daftar tanda terima uang / Amprah gaji',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Rekapitulasi',
-                        'keterangan' => 'Daftar penerimaan gaji per pegawai sesuai unit kerja yang telah ditandatangani / diverifikasi oleh bendahara.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Rekapitulasi daftar gaji dan tunjangan',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Rincian Sistem',
-                        'keterangan' => 'Rekapitulasi total gaji pokok, tunjangan keluarga, tunjangan jabatan, dan potongan resmi (IWP, Taperum, PPh 21).',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Daftar perubahan data pegawai',
-                        'kategori' => 'Kondisional',
-                        'format' => 'PDF Lampiran',
-                        'keterangan' => 'Daftar rincian pegawai yang mengalami perubahan pangkat, golongan, mutasi masuk/keluar, kenaikan gaji berkala (KGB), atau pensiun.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Salinan dokumen pendukung perubahan data pegawai yang telah dilegalisasi',
-                        'kategori' => 'Kondisional',
-                        'format' => 'PDF Legalisir',
-                        'keterangan' => 'SK Kenaikan Pangkat, SK Jabatan, SK Mutasi, atau Akta Kelahiran/Keluarga yang telah dilegalisasi oleh pejabat kepegawaian berwenang.',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Bukti setoran pajak (PPh Pasal 21)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Bukti Setor / SSP',
-                        'keterangan' => 'Bukti Surat Setoran Pajak (SSP) atau Bukti Penerimaan Negara (BPN) potongan PPh Pasal 21 atas pembayaran gaji ASN.',
-                    ],
-                ]
+$categories = [
+          'gaji_asn' => 
+          [
+            'nama' => 'Pembayaran Gaji ASN',
+            'kode' => 'SPP-LS Gaji',
+            'icon' => 'heroicon-o-users',
+            'deskripsi' => 'Kelengkapan berkas untuk pencairan belanja gaji.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Kuitansi induk untuk setiap SPP-LS gaji dll yang ditandatangani oleh PA, Bendahara dan salah satu penerima gaji',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Daftar tanda terima uang/Amprah gaji',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Rekapitulasi daftar gaji dan tunjangan (termasuk Daftar perubahan data pegawai & Salinan dokumen pendukung perubahan data pegawai yang telah dilegalisasi]',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
             ],
-            'barang_jasa' => [
-                'nama' => 'Pengadaan Barang & Jasa',
-                'kode' => 'SPP-LS Rekanan',
-                'icon' => 'heroicon-o-cube',
-                'deskripsi' => 'Kelengkapan berkas tagihan belanja pengadaan barang, jasa konsultansi, dan pekerjaan konstruksi dari pihak rekanan.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Surat Permintaan Pembayaran Langsung (SPP-LS) & Surat Perintah Membayar (SPM)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Asli Bertandatangan',
-                        'keterangan' => 'Dokumen resmi pengajuan pencairan dana LS yang disahkan oleh PPTK dan PPK.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Surat Perjanjian Kontrak / Surat Perintah Kerja (SPK) / Surat Pesanan (e-Katalog)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Kontrak Lengkap',
-                        'keterangan' => 'Salinan kontrak/SPK lengkap beserta syarat umum/khusus dan rincian harga yang disepakati.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Berita Acara Pemeriksaan Hasil Pekerjaan (BAPH / BAPHP)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Bertandatangan',
-                        'keterangan' => 'Dibuat dan ditandatangani oleh Tim Panitia Penerima Hasil Pekerjaan (PPHP) / Pejabat Pemeriksa Hasil Pekerjaan.',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Berita Acara Serah Terima Hasil Pekerjaan / Barang (BAST)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Bertandatangan',
-                        'keterangan' => 'Dibuat dan ditandatangani bersama oleh PPK dan Rekanan / Penyedia Jasa.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Berita Acara Pembayaran (BAP)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Bertandatangan',
-                        'keterangan' => 'Pernyataan kelayakan pembayaran sesuai termin atau prestasi pekerjaan yang telah dicapai (100%).',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Kuitansi Pembayaran & Faktur / Invoice Rekanan bermaterai cukup',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Asli Bermaterai',
-                        'keterangan' => 'Kuitansi bermaterai Rp 10.000 asli dan tagihan resmi rekanan yang mencantumkan nama, nomor rekening bank, dan stempel basah.',
-                    ],
-                    [
-                        'no' => 7,
-                        'nama' => 'Faktur Pajak (e-Faktur) & Bukti Setor / Potong Pajak (PPN & PPh 22/23)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF e-Faktur Resmi',
-                        'keterangan' => 'e-Faktur Pajak yang valid dan barcode dapat dipindai sesuai NPWP rekanan dan RS.',
-                    ],
-                    [
-                        'no' => 8,
-                        'nama' => 'Salinan NPWP & Rekening Bank Rekanan',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Salinan',
-                        'keterangan' => 'Konfirmasi nomor rekening perusahaan yang tercantum dalam kontrak untuk transfer pembayaran.',
-                    ],
-                    [
-                        'no' => 9,
-                        'nama' => 'Jaminan Pemeliharaan / Bank Garansi (jika dipersyaratkan)',
-                        'kategori' => 'Kondisional',
-                        'format' => 'PDF Jaminan Bank',
-                        'keterangan' => 'Wajib dilampirkan untuk pekerjaan konstruksi/pengadaan alat yang memiliki masa retensi/pemeliharaan.',
-                    ],
-                ]
+          ],
+          'tambahan_penghasilan' => 
+          [
+            'nama' => 'Pembayaran Tambahan Penghasilan',
+            'kode' => 'SPP-LS TPP',
+            'icon' => 'heroicon-o-banknotes',
+            'deskripsi' => 'Kelengkapan berkas untuk pencairan tambahan penghasilan.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'SK TPP',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Kuitansi induk',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Rekapitulasi/ Daftar Absensi/Pemotongan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Daftar pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'SKP Online dari BKD',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
             ],
-            'perjalanan_dinas' => [
-                'nama' => 'Perjalanan Dinas',
-                'kode' => 'SPP-LS / GU Perjadin',
-                'icon' => 'heroicon-o-paper-airplane',
-                'deskripsi' => 'Kelengkapan berkas pertanggungjawaban perjalanan dinas dalam daerah dan luar daerah.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Surat Tugas (ST) resmi yang ditandatangani Pejabat Berwenang',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Asli Bertandatangan',
-                        'keterangan' => 'Surat Tugas yang memuat nama pelaksana, maksud perjalanan, tanggal pelaksanaan, dan beban anggaran.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Surat Perintah Perjalanan Dinas (SPPD) Lembar I & II',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Asli Bertandatangan & Cap',
-                        'keterangan' => 'SPPD harus telah ditandatangani dan distempel basah oleh pejabat berwenang di lokasi tujuan perjalanan dinas.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Laporan Pelaksanaan Hasil Perjalanan Dinas',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Laporan',
-                        'keterangan' => 'Laporan tertulis hasil kegiatan, materi, hasil koordinasi/pelatihan, dan dokumentasi foto di lokasi tujuan.',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Kuitansi & Rincian Biaya Perjalanan Dinas (Daftar Pengeluaran Riil)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Kuitansi',
-                        'keterangan' => 'Rincian uang harian, uang transportasi, dan biaya penginapan sesuai Standar Satuan Harga (SSH) yang berlaku.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Tiket Transportasi Asli (Boarding Pass Pesawat / Kereta / Bus)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Tiket Asli',
-                        'keterangan' => 'Boarding pass fisik asli dan e-ticket atas nama pegawai yang bersangkutan.',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Bukti Pembayaran / Invoice Hotel / Penginapan Asli',
-                        'kategori' => 'Kondisional',
-                        'format' => 'PDF Invoice Resmi',
-                        'keterangan' => 'Bukti pembayaran hotel asli memuat nomor kamar, nama tamu, tanggal check-in & check-out.',
-                    ],
-                    [
-                        'no' => 7,
-                        'nama' => 'Struk Pembelian BBM dan Karcis Tol Resmi (Kendaraan Dinas)',
-                        'kategori' => 'Kondisional',
-                        'format' => 'PDF Struk Asli',
-                        'keterangan' => 'Hanya dilampirkan jika perjalanan darat menggunakan kendaraan dinas operasional.',
-                    ],
-                ]
+          ],
+          'gaji_kontrak' => 
+          [
+            'nama' => 'Pembayaran gaji pegawai kontrak',
+            'kode' => 'SPP-LS Kontrak',
+            'icon' => 'heroicon-o-user-group',
+            'deskripsi' => 'Kelengkapan berkas untuk pencairan gaji pegawai kontrak.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'SK Pengangkatan sbg tenaga honorer',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Kuitansi induk',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Daftar pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'print out absensi',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
             ],
-            'honorarium' => [
-                'nama' => 'Honorarium & Narasumber',
-                'kode' => 'SPP-LS / GU Honor',
-                'icon' => 'heroicon-o-academic-cap',
-                'deskripsi' => 'Kelengkapan berkas belanja honorarium narasumber, instruktur, tim pengelola kegiatan, dan panitia.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Surat Keputusan (SK) Direktur / PA tentang Penetapan Tim / Narasumber',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF SK Resmi',
-                        'keterangan' => 'SK Direktur yang menjadi dasar hukum pengangkatan tim atau narasumber beserta besaran satuan honor.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Kerangka Acuan Kerja (KAK / TOR) & Surat Undangan Kegiatan',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF KAK & Undangan',
-                        'keterangan' => 'Memuat latar belakang, jadwal acara, materi paparan, dan rincian alokasi jam pelajaran (JP) narasumber.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Daftar Hadir / Presensi Peserta & Narasumber',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Daftar Hadir Asli',
-                        'keterangan' => 'Daftar hadir bertandatangan lengkap seluruh peserta dan narasumber pada setiap sesi kegiatan.',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Daftar Penerimaan Honorarium / Amprah Honor bertandatangan',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Amprah Honor',
-                        'keterangan' => 'Daftar tanda terima honor yang mencantumkan nama, NIP/NIK, NPWP, jumlah bruto, potongan PPh 21, dan jumlah neto yang diterima.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Laporan Hasil Kegiatan / Risalah / Notulensi & Dokumentasi Foto',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Laporan & Foto',
-                        'keterangan' => 'Dokumentasi foto pelaksanaan kegiatan (menampilkan narasumber dan peserta) serta notulensi ringkas.',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Bukti Potong Pajak Penghasilan (PPh Pasal 21)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Bukti Potong',
-                        'keterangan' => 'Bukti potong PPh 21 sesuai tarif (ASN Gol IV: 15%, Gol III: 5%, Non-ASN sesuai ketentuan).',
-                    ],
-                ]
+          ],
+          'mamin_tamu' => 
+          [
+            'nama' => 'Belanja Makan dan Minuman Tamu',
+            'kode' => 'SPP-LS/GU Mamin',
+            'icon' => 'heroicon-o-cake',
+            'deskripsi' => 'Kelengkapan berkas belanja makan dan minuman tamu.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Faktur makan/Minum yang ditanda tangani pemilik warung',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Daftar hadir tamu',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
             ],
-            'uang_persediaan' => [
-                'nama' => 'Uang Persediaan & SPJ GU',
-                'kode' => 'SPP-UP / SPP-GU / SPP-TU',
-                'icon' => 'heroicon-o-credit-card',
-                'deskripsi' => 'Kelengkapan berkas pengajuan Uang Persediaan (UP), Ganti Uang (GU), dan Tambahan Uang (TU) operasional kas kecil.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Surat Permintaan Pembayaran UP / GU / TU dan SPM',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Asli Bertandatangan',
-                        'keterangan' => 'Dokumen SPP-UP/GU/TU yang ditandatangani Bendahara Pengeluaran dan disahkan oleh PA/PPK.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Surat Keputusan (SK) Penetapan Besaran Pagu Uang Persediaan BLUD',
-                        'kategori' => 'Wajib (UP)',
-                        'format' => 'PDF SK Direktur',
-                        'keterangan' => 'Dasar penetapan pagu uang persediaan awal tahun anggaran yang ditetapkan oleh Direktur RS.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Buku Kas Umum (BKU) dan Buku Pembantu Kas Pengeluaran',
-                        'kategori' => 'Wajib (GU/TU)',
-                        'format' => 'PDF BKU Periode Berjalan',
-                        'keterangan' => 'Catatan mutasi penerimaan dan pengeluaran kas periode berjalan yang telah ditutup dan ditandatangani Bendahara.',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Surat Pertanggungjawaban (SPJ) Belanja Operasional yang disahkan PPTK',
-                        'kategori' => 'Wajib (GU/TU)',
-                        'format' => 'PDF SPJ Lengkap',
-                        'keterangan' => 'Rekapitulasi SPJ belanja riil yang telah diverifikasi kelayakan buktinya.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Kuitansi & Nota Riil Pembelian Belanja Operasional (ATK, Bahan, Konsumsi)',
-                        'kategori' => 'Wajib (GU/TU)',
-                        'format' => 'PDF Nota & Kuitansi',
-                        'keterangan' => 'Nota asli pembelian barang operasional harian yang dilampiri tanda terima barang dan stempel toko.',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Berita Acara Pemeriksaan Kas (Opname Kas) dan Rekonsiliasi Bank',
-                        'kategori' => 'Wajib (GU)',
-                        'format' => 'PDF Berita Acara Kas',
-                        'keterangan' => 'Hasil opname fisik kas tunai di brankas bendahara dan bukti saldo rekening koran bank.',
-                    ],
-                ]
+          ],
+          'mamin_rapat' => 
+          [
+            'nama' => 'Belanja Makan dan Minuman Rapat',
+            'kode' => 'SPP-LS/GU Mamin',
+            'icon' => 'heroicon-o-users',
+            'deskripsi' => 'Kelengkapan berkas belanja makan dan minuman rapat.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Undangan rapat',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Daftar hadir peserta rapat ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Faktur makan/Minum yang ditanda tangani pemilik warung',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
             ],
-            'pemeliharaan' => [
-                'nama' => 'Pemeliharaan Sarpras & Alkes',
-                'kode' => 'SPP-LS / GU Pemeliharaan',
-                'icon' => 'heroicon-o-wrench-screwdriver',
-                'deskripsi' => 'Kelengkapan berkas servis teknis, pemeliharaan gedung, kalibrasi alat kesehatan, dan penggantian suku cadang.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Surat Permohonan Perbaikan / Work Order (WO) dari Unit Pengguna',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF WO Bertandatangan',
-                        'keterangan' => 'Laporan permohonan servis awal dari kepala ruangan / unit terkait mengenai kondisi kerusakan sarana.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Berita Acara Pemeriksaan Kerusakan Teknis oleh IPSRS / Teknisi',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF BAP Kerusakan',
-                        'keterangan' => 'Hasil analisis teknis penyebab kerusakan dan rekomendasi penggantian suku cadang / servis spesialis.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Surat Perintah Kerja (SPK) Servis / Perbaikan',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF SPK Resmi',
-                        'keterangan' => 'Perintah kerja pelaksanaan perbaikan kepada penyedia jasa servis atau bengkel rekanan.',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Kuitansi & Faktur Pembelian Suku Cadang Asli beserta rincian jasa',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Kuitansi & Faktur',
-                        'keterangan' => 'Rincian harga sparepart pengganti dan ongkos kerja servis yang telah disetujui.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Berita Acara Serah Terima Pekerjaan Pemeliharaan / Uji Fungsi Alat',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF BAST Pemeliharaan',
-                        'keterangan' => 'Pernyataan bahwa sarana / alat telah selesai diperbaiki, diuji fungsi, dan beroperasi normal kembali.',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Dokumentasi Foto Sebelum (0%), Pengerjaan (50%), dan Selesai (100%)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Foto Visual',
-                        'keterangan' => 'Foto fisik alat / sarana yang diperbaiki sebagai bukti riil pekerjaan.',
-                    ],
-                ]
+          ],
+          'mamin_pelatihan_swakelola' => 
+          [
+            'nama' => 'Belanja Makan dan Minuman pelatihan, workshop, sosialisasi dan Bimtek (Swakelola]',
+            'kode' => 'SPP-LS/GU Mamin',
+            'icon' => 'heroicon-o-academic-cap',
+            'deskripsi' => 'Kelengkapan berkas belanja mamin pelatihan (Swakelola].',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Daftar hadir peserta ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Faktur makan/Minum yang ditanda tangani pemilik warung',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Undangan Sosialisasi/Bimtek',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Daftar setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
             ],
-            'obat_bmhp' => [
-                'nama' => 'Belanja Obat, BMHP & Reagen',
-                'kode' => 'SPP-LS Farmasi',
-                'icon' => 'heroicon-o-beaker',
-                'deskripsi' => 'Kelengkapan berkas pengadaan obat-obatan, Bahan Medis Habis Pakai (BMHP), reagen lab, dan gas medis.',
-                'items' => [
-                    [
-                        'no' => 1,
-                        'nama' => 'Surat Pesanan (SP) Obat/BMHP oleh Apoteker Penanggung Jawab / PPTK Farmasi',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Surat Pesanan Resmi',
-                        'keterangan' => 'Surat Pesanan berkop resmi dengan nomor SIPA Apoteker kepada Pedagang Besar Farmasi (PBF) resmi.',
-                    ],
-                    [
-                        'no' => 2,
-                        'nama' => 'Surat Jalan / Delivery Order (DO) dari PBF Rekanan',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Surat Jalan Asli',
-                        'keterangan' => 'Surat jalan yang mencantumkan nama obat, nomor batch, tanggal kedaluwarsa (ED), dan jumlah unit.',
-                    ],
-                    [
-                        'no' => 3,
-                        'nama' => 'Berita Acara Penerimaan & Pemeriksaan Barang Farmasi oleh Panitia/Pemeriksa',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF BAP Penerimaan',
-                        'keterangan' => 'Pemeriksaan fisik kesesuaian obat, segel kemasan, suhu pengiriman (rantai dingin jika vaksin/reagen), dan ED.',
-                    ],
-                    [
-                        'no' => 4,
-                        'nama' => 'Faktur Tagihan / Invoice Asli Bermaterai Cukup dari PBF',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Faktur Asli',
-                        'keterangan' => 'Faktur asli yang telah diverifikasi harga satuannya sesuai e-Katalog / kontrak pengadaan.',
-                    ],
-                    [
-                        'no' => 5,
-                        'nama' => 'Bukti Pencatatan Kartu Stok / Sistem SIMRS Farmasi',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF Laporan Masuk SIMRS',
-                        'keterangan' => 'Bukti transaksi penerimaan barang telah tercatat secara elektronik ke dalam persediaan gudang farmasi.',
-                    ],
-                    [
-                        'no' => 6,
-                        'nama' => 'Faktur Pajak (e-Faktur PPN & PPh)',
-                        'kategori' => 'Wajib',
-                        'format' => 'PDF e-Faktur Resmi',
-                        'keterangan' => 'e-Faktur pajak dari PBF yang telah divalidasi Ditjen Pajak.',
-                    ],
-                ]
+          ],
+          'mamin_pelatihan_hotel' => 
+          [
+            'nama' => 'Belanja Makan dan Minuman pelatihan, workshop, sosialisasi dan Bimtek (Hotel]',
+            'kode' => 'SPP-LS/GU Mamin',
+            'icon' => 'heroicon-o-building-office',
+            'deskripsi' => 'Kelengkapan berkas belanja mamin pelatihan (Hotel].',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Notulen',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Bill pembayaran hotel',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'SPK (kontrak diatas 50jt]',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Daftar hadir peserta ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
             ],
-        ];
+          ],
+          'jasa_utilitas' => 
+          [
+            'nama' => 'Belanja Jasa telepon, air, listrik, internet dll',
+            'kode' => 'SPP-LS/GU Jasa',
+            'icon' => 'heroicon-o-wifi',
+            'deskripsi' => 'Kelengkapan berkas belanja jasa utilitas.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Bukti faktur/resi pembayaran tagihan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+            ],
+          ],
+          'perjadin_dalam_provinsi' => 
+          [
+            'nama' => 'Belanja perjalanan dinas luar kota dalam provinsi',
+            'kode' => 'SPP-LS/GU Perjadin',
+            'icon' => 'heroicon-o-paper-airplane',
+            'deskripsi' => 'Kelengkapan berkas perjalanan dinas dalam provinsi.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Surat undangan/telaah staf yang disetujui pejabat yang berwenang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'SPPD yang ditanda tangani oleh pejabat yang berwenang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Daftar pembayaran uang harian',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Surat tugas',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Biaya penginapan/bill hotel',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Tiket kendaraan umum atau faktur bbm',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Laporan perjalanan dinas',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+            ],
+          ],
+          'belanja_foto' => 
+          [
+            'nama' => 'Belanja Foto',
+            'kode' => 'SPP-LS/GU Cetak',
+            'icon' => 'heroicon-o-camera',
+            'deskripsi' => 'Kelengkapan berkas belanja cetak foto.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang merinci jumlah dan ukuran foto',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Bukti fisik foto yang dicetak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'belanja_spanduk' => 
+          [
+            'nama' => 'Belanja Spanduk/Baliho dll',
+            'kode' => 'SPP-LS/GU Cetak',
+            'icon' => 'heroicon-o-printer',
+            'deskripsi' => 'Kelengkapan berkas belanja cetak spanduk/baliho.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan yang didalamnya tertera kalimat spanduk dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang mencantumkan ukurannya',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Foto spanduk yang dicetak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'belanja_media' => 
+          [
+            'nama' => 'Belanja Media',
+            'kode' => 'SPP-LS/GU Cetak',
+            'icon' => 'heroicon-o-newspaper',
+            'deskripsi' => 'Kelengkapan berkas belanja media cetak/online.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan yang didalamnya tertera kalimat spanduk dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang mencantumkan ukurannya',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Copy kliping koran, CD rekaman TV dan Print out media online',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran rinci',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'jasa_pengamanan' => 
+          [
+            'nama' => 'Belanja Jasa Lembaga Penyedia Pengamanan',
+            'kode' => 'SPP-LS Jasa',
+            'icon' => 'heroicon-o-shield-check',
+            'deskripsi' => 'Kelengkapan berkas belanja jasa pengamanan.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat Perjanjian Kerjasama',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Berita acara serah terima antara penyedia dan KPA',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Berita acara pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Daftar tanda terima gaji masing-masing anggota',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Rekap absensi',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+              8 => 
+              [
+                'nama' => 'Laporan Pelaksanaan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 9,
+              ],
+              9 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 10,
+              ],
+            ],
+          ],
+          'jasa_kebersihan' => 
+          [
+            'nama' => 'Belanja Jasa Lembaga Penyedia Kebersihan',
+            'kode' => 'SPP-LS Jasa',
+            'icon' => 'heroicon-o-sparkles',
+            'deskripsi' => 'Kelengkapan berkas belanja jasa kebersihan.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat Perjanjian Kerjasama',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Berita acara serah terima antara penyedia dan KPA',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Berita acara pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Daftar tanda terima gaji masing-masing anggota',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Rekap absensi',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+              8 => 
+              [
+                'nama' => 'Laporan Pelaksanaan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 9,
+              ],
+              9 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 10,
+              ],
+            ],
+          ],
+          'fotocopy' => 
+          [
+            'nama' => 'Belanja Fotocopy',
+            'kode' => 'SPP-LS/GU ATK',
+            'icon' => 'heroicon-o-document-duplicate',
+            'deskripsi' => 'Kelengkapan berkas belanja fotocopy.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang merinci jumlah barang dan satuan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+            ],
+          ],
+          'fotocopy_pelatihan' => 
+          [
+            'nama' => 'Belanja Fotocopy untuk peserta pelatihan, workshop, sosialisasi dll',
+            'kode' => 'SPP-LS/GU ATK',
+            'icon' => 'heroicon-o-book-open',
+            'deskripsi' => 'Kelengkapan berkas belanja fotocopy untuk pelatihan.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat Perjanjian Kerjasama',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Berita acara serah terima antara penyedia dan KPA',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Berita acara pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Daftar tanda terima bahan oleh peserta',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Dokumentasi/ foto',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+              8 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 9,
+              ],
+            ],
+          ],
+          'pemeliharaan_kendaraan' => 
+          [
+            'nama' => 'Belanja pemeliharaan Kendaraan',
+            'kode' => 'SPP-LS/GU Pemeliharaan',
+            'icon' => 'heroicon-o-truck',
+            'deskripsi' => 'Kelengkapan berkas belanja pemeliharaan kendaraan.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat permintaan service dari pemegang kendaraan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Surat pesanan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Faktur yang merinci service yang dilakukan serta mencantumkan plat kendaraan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran (tanda legialisasi service kendaraan dibelakang lembar kuitansi oleh pemegang kendaraan]',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'suku_cadang' => 
+          [
+            'nama' => 'Pembelian suku cadang',
+            'kode' => 'SPP-LS/GU Suku Cadang',
+            'icon' => 'heroicon-o-cog',
+            'deskripsi' => 'Kelengkapan berkas belanja pembelian suku cadang kendaraan/alat.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat permintaan dari pemakai barang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Surat pesanan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Faktur merinci suku cadang yang dibeli, harga, jumlah dan merk',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran (tanda penggantian suku cadang kendaraan dibelakang lembaran kuitansi oleh pemakai kendaraan]',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak (* khusus suku cadang yang diganti disimpan sampai dengan waktu pemeriksaan]',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'bbm' => 
+          [
+            'nama' => 'Pembelian BBM',
+            'kode' => 'SPP-LS/GU BBM',
+            'icon' => 'heroicon-o-funnel',
+            'deskripsi' => 'Kelengkapan berkas belanja pembelian bahan bakar minyak (BBM].',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang memuat jumlah liter BBM dikali dengan harga perliter',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran yang dilegalisasi oleh SPBU',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Daftar tanda terima kupon dari SPBU',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+            ],
+          ],
+          'pemeliharaan_komputer' => 
+          [
+            'nama' => 'Belanja pemeliharaan komputer /AC dan elektronik lainnya',
+            'kode' => 'SPP-LS/GU Pemeliharaan',
+            'icon' => 'heroicon-o-computer-desktop',
+            'deskripsi' => 'Kelengkapan berkas belanja pemeliharaan elektronik.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat permintaan service dari pemegang barang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Faktur yang merinci penggantian yang diperbaiki',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'pemeliharaan_peralatan' => 
+          [
+            'nama' => 'Belanja pemeliharaan Peralatann kantor (Meja, Kursi, dan Lemari]',
+            'kode' => 'SPP-LS/GU Pemeliharaan',
+            'icon' => 'heroicon-o-wrench-screwdriver',
+            'deskripsi' => 'Kelengkapan berkas belanja pemeliharaan peralatan kantor.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat permintaan service dari pemakai barang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Faktur yang merinci penggantian yang diperbaiki',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Dokumentasi sebelum dan sesudah di service',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+            ],
+          ],
+          'obat_alkes' => 
+          [
+            'nama' => 'Belanja obat/alkes',
+            'kode' => 'SPP-LS Farmasi',
+            'icon' => 'heroicon-o-beaker',
+            'deskripsi' => 'Kelengkapan berkas belanja obat/alat kesehatan.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang merinci jumlah barang dan satuan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'BAST yang ditanda tangani oleh KPA dan Penyedia',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Berita acara pemeriksaan barang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Dokumentasi atau foto',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+            ],
+          ],
+          'pengadaan_barang' => 
+          [
+            'nama' => 'Belanja pengadaan barang dan jasa',
+            'kode' => 'SPP-LS Rekanan',
+            'icon' => 'heroicon-o-shopping-cart',
+            'deskripsi' => 'Kelengkapan berkas belanja pengadaan barang dan jasa.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang merinci jumlah barang dan satuan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'BAST yang ditanda tangani oleh KPA dan Penyedia',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Berita acara pemeriksaan barang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Dokumentasi atau foto',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+            ],
+          ],
+          'barang_atk' => 
+          [
+            'nama' => 'Belanja barang ATK, barang cetakan dll',
+            'kode' => 'SPP-LS/GU ATK',
+            'icon' => 'heroicon-o-clipboard-document',
+            'deskripsi' => 'Kelengkapan berkas belanja barang ATK, cetakan, dll.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat pesanan untuk pengadaan yang nilainya 1jt ke atas dan ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Faktur yang merinci jumlah barang dan satuan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'BAST yang ditanda tangani oleh PPTK dan Penyedia',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Berita acara pemeriksaan barang',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Dokumentasi atau foto',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+            ],
+          ],
+          'upah_tukang' => 
+          [
+            'nama' => 'Belanja upah tukang (swakelola]',
+            'kode' => 'SPP-LS/GU Upah',
+            'icon' => 'heroicon-o-wrench-screwdriver',
+            'deskripsi' => 'Kelengkapan berkas belanja upah tukang (swakelola).',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat permintaan yang ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Kuitansi pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Daftar pembayaran',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Daftar hadir tukang yang diketahui oleh',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+            ],
+          ],
+          'lembur' => 
+          [
+            'nama' => 'Belanja Lembur',
+            'kode' => 'SPP-LS/GU Lembur',
+            'icon' => 'heroicon-o-clock',
+            'deskripsi' => 'Kelengkapan berkas belanja lembur pegawai.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Surat Perintah Lembur yang ditanda tanganii PA',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Kuitansi induk yang ditanda tangani salah satu seorang penerima lembur',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Daftar hadir yang ditanda tangani oleh PPTK',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Fotocopy cetakan dari hasi absensi online',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+              5 => 
+              [
+                'nama' => 'Daftar penerima pembayaran lembur',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 6,
+              ],
+              6 => 
+              [
+                'nama' => 'Bukti setoran pajak',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 7,
+              ],
+              7 => 
+              [
+                'nama' => 'Lampirkan faktur makan minum lembur jika ada',
+                'kategori' => 'Kondisional',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 8,
+              ],
+            ],
+          ],
+          'honor_dokter' => 
+          [
+            'nama' => 'Pembayaran Honorarium Dokter Jaga IGD',
+            'kode' => 'SPP-LS Honor',
+            'icon' => 'heroicon-o-plus-circle',
+            'deskripsi' => 'Kelengkapan berkas pembayaran honorarium dokter jaga IGD.',
+            'items' => 
+            [
+              0 => 
+              [
+                'nama' => 'Nota persetujuan PA utk nilai diatas 1jt dan KPA utk nilai sd 1jt',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 1,
+              ],
+              1 => 
+              [
+                'nama' => 'Kuitansi pembayaran induk yang di tanda tangani salah satu pernerima honor',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 2,
+              ],
+              2 => 
+              [
+                'nama' => 'Daftar pembayaran honorarium',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 3,
+              ],
+              3 => 
+              [
+                'nama' => 'Daftar Dinas',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 4,
+              ],
+              4 => 
+              [
+                'nama' => 'Daftar hadir/kedatangan',
+                'kategori' => 'Wajib',
+                'format' => 'Cetak/PDF',
+                'keterangan' => '',
+                'no' => 5,
+              ],
+            ],
+          ],
+];
 
         $currentData = $categories[$activeCategory] ?? $categories['gaji_asn'];
         $items = $currentData['items'];
+        $filteredCategories = $categories;
 
         if (!empty($searchQuery)) {
             $query = strtolower($searchQuery);
@@ -390,6 +1667,11 @@
                 return str_contains(strtolower($item['nama']), $query) 
                     || str_contains(strtolower($item['keterangan']), $query)
                     || str_contains(strtolower($item['format']), $query);
+            });
+
+            $filteredCategories = array_filter($categories, function($cat) use ($query) {
+                return str_contains(strtolower($cat['nama']), $query)
+                    || str_contains(strtolower($cat['deskripsi']), $query);
             });
         }
 
@@ -515,7 +1797,7 @@
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        @foreach($categories as $key => $cat)
+                        @foreach($filteredCategories as $key => $cat)
                             @php
                                 $isActive = ($activeCategory === $key);
                             @endphp
