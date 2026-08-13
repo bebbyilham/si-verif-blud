@@ -298,15 +298,15 @@
 }
 
 /* ============================================================
-   SPLIT SCREEN LOGIN PAGE STYLING (Crunchbase Reference & Glassmorphism Indigo)
+   MODERN SPLIT SCREEN LOGIN PAGE STYLING
    ============================================================ */
 body:has(.split-login-container) {
     overflow-x: hidden;
-    background: #ffffff !important;
+    background: #f8fafc !important;
 }
 
 .fi-simple-layout:has(.split-login-container) {
-    background: #ffffff !important;
+    background: #f8fafc !important;
     padding: 0 !important;
     max-width: 100% !important;
 }
@@ -326,7 +326,7 @@ body:has(.split-login-container) {
     min-height: 100vh;
     width: 100vw;
     background: #ffffff;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
     overflow: hidden;
     position: fixed;
     inset: 0;
@@ -335,65 +335,126 @@ body:has(.split-login-container) {
 
 /* Left Panel (Form Side) */
 .split-login-left {
-    flex: 0 0 440px;
-    max-width: 440px;
-    padding: 40px 44px;
+    flex: 0 0 460px;
+    max-width: 460px;
+    width: 100%;
+    padding: 40px 48px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     background: #ffffff;
     z-index: 10;
     overflow-y: auto;
+    border-right: 1px solid #f1f5f9;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
     .split-login-left {
-        flex: 0 0 460px;
-        max-width: 460px;
-        padding: 48px 52px;
+        flex: 0 0 520px;
+        max-width: 520px;
+        padding: 56px 64px;
     }
 }
 
-.split-login-form-box {
+.split-login-form-wrapper {
     width: 100%;
-    max-width: 400px;
+    max-width: 380px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Brand Header */
 .split-brand-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 36px;
+    gap: 14px;
+    margin-bottom: 32px;
+}
+
+.split-brand-logo-glow {
+    position: relative;
+}
+
+.split-brand-logo-glow::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    background: linear-gradient(135deg, #6366f1, #3b82f6);
+    border-radius: 14px;
+    filter: blur(8px);
+    opacity: 0.4;
+    z-index: 0;
 }
 
 .split-brand-logo {
-    width: 40px;
-    height: 40px;
+    position: relative;
+    z-index: 1;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+.split-brand-logo svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.split-brand-text {
+    display: flex;
+    flex-direction: column;
 }
 
 .split-brand-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #1e1b4b;
-    letter-spacing: -0.01em;
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+
+.split-brand-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6366f1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 /* Heading Box */
 .split-heading-box {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+}
+
+.split-welcome-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #eef2ff;
+    border: 1px solid #e0e7ff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4338ca;
+    margin-bottom: 14px;
+}
+
+.split-pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
 }
 
 .split-heading-title {
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 800;
     color: #0f172a;
     letter-spacing: -0.03em;
@@ -405,286 +466,212 @@ body:has(.split-login-container) {
     font-size: 14px;
     color: #64748b;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
-/* Submit Button */
+/* Form Actions & Submit Button */
+.split-filament-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .split-submit-btn {
     width: 100%;
     padding: 13px 20px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
     color: #ffffff;
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 600;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-    transition: all 0.2s ease;
-    margin-top: 16px;
+    gap: 10px;
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 8px;
 }
 
 .split-submit-btn:hover {
-    background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+    background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.45);
 }
 
-/* Right Panel (Hero Graphic Side) */
+.split-submit-btn:active {
+    transform: translateY(0);
+}
+
+.split-submit-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.split-submit-btn:hover svg {
+    transform: translateX(4px);
+}
+
+/* Role Access Quick Reference Pills */
+.split-role-access {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.split-role-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.split-role-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.role-pill {
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.15s ease;
+}
+
+.role-pill:hover {
+    background: #e0e7ff;
+    color: #4338ca;
+    border-color: #c7d2fe;
+}
+
+/* Security Footer */
+.split-login-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    font-size: 11.5px;
+    color: #94a3b8;
+}
+
+.split-login-footer svg {
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+/* Right Panel (Hero & Showcase Side) */
 .split-login-right {
     flex: 1;
-    background: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #4f46e5 100%);
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 80%, #4f46e5 100%);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 36px 40px;
+    padding: 48px;
     overflow: hidden;
-}
-
-@media (max-width: 900px) {
-    .split-login-right {
-        display: none;
-    }
 }
 
 .split-hero-glow-top {
     position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 350px;
-    height: 350px;
-    background: rgba(129, 140, 248, 0.3);
+    top: -120px;
+    right: -120px;
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.4) 0%, rgba(99, 102, 241, 0) 70%);
     border-radius: 50%;
-    filter: blur(80px);
+    filter: blur(60px);
     pointer-events: none;
+    animation: blob-float 18s infinite ease-in-out;
 }
 
 .split-hero-glow-bottom {
     position: absolute;
-    bottom: -80px;
-    left: -80px;
-    width: 300px;
-    height: 300px;
-    background: rgba(99, 102, 241, 0.25);
+    bottom: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, rgba(99, 102, 241, 0) 70%);
     border-radius: 50%;
-    filter: blur(70px);
+    filter: blur(50px);
     pointer-events: none;
+    animation: blob-float 22s infinite ease-in-out reverse;
 }
 
 .split-hero-content {
-    max-width: 840px;
+    max-width: 780px;
     width: 100%;
     z-index: 2;
     color: #ffffff;
+    display: flex;
+    flex-direction: column;
 }
 
-.split-hero-title {
-    font-size: 28px;
-    font-weight: 800;
-    line-height: 1.3;
-    margin-bottom: 12px;
-    color: #ffffff;
-}
-
-.split-hero-subtitle {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.85);
-    line-height: 1.6;
-    margin-bottom: 28px;
-}
-
-.split-hero-pill {
-    display: inline-block;
-    padding: 6px 16px;
+.split-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
     border-radius: 30px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 12px;
     font-weight: 600;
     color: #e0e7ff;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    width: fit-content;
+}
+
+.split-hero-badge svg {
+    color: #818cf8;
 }
 
 .split-hero-title {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
     color: #ffffff !important;
-    margin: 0 0 16px 0;
+    margin: 0 0 14px 0;
 }
 
 .split-hero-subtitle {
-    font-size: 15px;
+    font-size: 14.5px;
     line-height: 1.6;
     color: #c7d2fe;
-    margin: 0 0 36px 0;
+    margin: 0 0 28px 0;
+    max-width: 680px;
 }
 
-/* Cards Mockup (Glassmorphism Indigo) */
-.split-hero-cards-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.split-hero-card.card-primary {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    color: #1e1b4b;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.split-card-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
-}
-
-.split-card-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 800;
-    color: #ffffff;
-    flex-shrink: 0;
-}
-
-.icon-indigo { background: #4f46e5; }
-.icon-emerald { background: #10b981; }
-.icon-purple { background: #8b5cf6; }
-
-.split-card-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.split-card-info strong {
-    font-size: 13px;
-    font-weight: 700;
-    color: #0f172a;
-}
-
-.split-card-info span {
-    font-size: 11px;
-    color: #64748b;
-}
-
-.split-card-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.split-card-badge.success { background: #ecfdf5; color: #047857; }
-.split-card-badge.warning { background: #fffbeb; color: #b45309; }
-.split-card-badge.danger  { background: #fef2f2; color: #b91c1c; }
-.split-card-badge.info     { background: #eff6ff; color: #1d4ed8; }
-
-.split-hero-card.card-floating {
-    position: absolute;
-    right: -20px;
-    bottom: -30px;
-    width: 260px;
-    background: rgba(30, 27, 75, 0.85);
-    backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 18px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-    color: #ffffff;
-}
-
-.split-float-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.split-float-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: #a5b4fc;
-}
-
-.split-float-dots {
-    display: flex;
-    gap: 4px;
-}
-
-.split-float-dots span {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.split-float-grid {
-    display: flex;
-    justify-content: space-between;
-}
-
-.split-float-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.split-float-stat small {
-    font-size: 10px;
-    color: #94a3b8;
-}
-
-.split-float-stat strong {
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffffff;
-}
-
-/* ============================================================
-   APPLICATION DASHBOARD WINDOW SHOWCASE (Login Page)
-   ============================================================ */
+/* Dashboard Mockup Window */
 .app-dashboard-window {
     width: 100%;
-    max-width: 820px;
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
-    transform: perspective(1000px) rotateY(-1.5deg) rotateX(1deg);
-    transition: transform 0.4s ease;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.25);
+    transform: perspective(1000px) rotateY(-1deg) rotateX(1deg);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .app-dashboard-window:hover {
     transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+    box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .app-window-bar {
-    height: 36px;
+    height: 34px;
     background: #f1f5f9;
     border-bottom: 1px solid #e2e8f0;
     display: flex;
@@ -699,8 +686,8 @@ body:has(.split-login-container) {
 }
 
 .app-window-dots span {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
 }
 
@@ -710,10 +697,10 @@ body:has(.split-login-container) {
 
 .app-window-url {
     flex: 1;
-    max-width: 240px;
-    height: 22px;
+    max-width: 260px;
+    height: 20px;
     background: #ffffff;
-    border-radius: 6px;
+    border-radius: 5px;
     border: 1px solid #cbd5e1;
     display: flex;
     align-items: center;
@@ -724,30 +711,149 @@ body:has(.split-login-container) {
 }
 
 .app-window-body {
-    padding: 16px;
+    padding: 14px 16px;
     background: #f8fafc;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .app-dasbor-title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 800;
     color: #0f172a;
-    margin-bottom: -4px;
 }
 
-/* App Filter Bar Mockup */
-.app-filter-bar {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 6px 10px;
-    border: 1px solid #e2e8f0;
+.app-filter-pill-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 9px;
+    gap: 8px;
+    width: 100%;
+}
+
+.app-pill-group {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    gap: 2px;
+}
+
+.app-pill {
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #64748b;
+    border-radius: 6px;
+}
+
+.app-pill.active {
+    font-weight: 700;
+    color: #0f172a;
+    background: #e0e7ff;
+}
+
+/* Floating Status Pulse Card */
+.split-floating-card {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: fit-content;
+    animation: floatPulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes floatPulse {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-6px); }
+}
+
+.floating-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #10b981;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.floating-card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.floating-card-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.floating-card-sub {
+    font-size: 11px;
+    color: #cbd5e1;
+}
+
+/* ============================================================
+   RESPONSIVE BREAKPOINTS (Mobile & Tablet Optimization)
+   ============================================================ */
+@media (max-width: 1024px) {
+    .split-login-container {
+        position: relative;
+        inset: auto;
+        min-height: 100vh;
+        width: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
+        padding: 24px 16px;
+        overflow-y: auto;
+    }
+
+    .split-login-left {
+        flex: none;
+        max-width: 440px;
+        width: 100%;
+        padding: 32px 28px;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: #ffffff;
+        margin: auto;
+    }
+
+    .split-login-right {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .split-login-left {
+        padding: 24px 20px;
+        border-radius: 20px;
+    }
+
+    .split-heading-title {
+        font-size: 24px;
+    }
+
+    .split-brand-title {
+        font-size: 15px;
+    }
 }
 
 .app-filter-title {
