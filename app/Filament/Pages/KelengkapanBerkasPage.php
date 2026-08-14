@@ -17,11 +17,17 @@ class KelengkapanBerkasPage extends Page
     protected string $view = 'filament.pages.kelengkapan-berkas';
 
     public string $activeCategory = 'gaji_asn';
+    public string $activeGroup = 'semua';
     public string $activeTab = 'ceklis'; // 'ceklis' or 'lembar_cetak'
     public string $searchQuery = '';
     public array $checkedItems = [];
     public string $nomorDokumen = '';
     public string $catatanVerifikasi = '';
+
+    public function setGroup(string $group): void
+    {
+        $this->activeGroup = $group;
+    }
 
     public function setTab(string $tab): void
     {

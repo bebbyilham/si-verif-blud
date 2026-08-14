@@ -1657,6 +1657,45 @@ $categories = [
           ],
 ];
 
+        $groups = [
+            'gaji' => [
+                'nama' => 'Gaji, Honor & Lembur',
+                'icon' => 'heroicon-o-users',
+                'keys' => ['gaji_asn', 'tambahan_penghasilan', 'gaji_kontrak', 'honor_dokter', 'lembur'],
+            ],
+            'mamin' => [
+                'nama' => 'Belanja Makan & Minum',
+                'icon' => 'heroicon-o-cake',
+                'keys' => ['mamin_tamu', 'mamin_rapat', 'mamin_pelatihan_swakelola', 'mamin_pelatihan_hotel'],
+            ],
+            'jasa' => [
+                'nama' => 'Jasa & Utilitas',
+                'icon' => 'heroicon-o-shield-check',
+                'keys' => ['jasa_utilitas', 'jasa_pengamanan', 'jasa_kebersihan'],
+            ],
+            'cetak' => [
+                'nama' => 'Cetak, Foto & Media',
+                'icon' => 'heroicon-o-printer',
+                'keys' => ['belanja_foto', 'belanja_spanduk', 'belanja_media', 'fotocopy', 'fotocopy_pelatihan'],
+            ],
+            'pemeliharaan' => [
+                'nama' => 'Pemeliharaan & BBM',
+                'icon' => 'heroicon-o-wrench-screwdriver',
+                'keys' => ['pemeliharaan_kendaraan', 'suku_cadang', 'bbm', 'pemeliharaan_komputer', 'pemeliharaan_peralatan'],
+            ],
+            'pengadaan' => [
+                'nama' => 'Pengadaan Barang, ATK & Alkes',
+                'icon' => 'heroicon-o-shopping-cart',
+                'keys' => ['obat_alkes', 'pengadaan_barang', 'barang_atk', 'upah_tukang'],
+            ],
+            'perjadin' => [
+                'nama' => 'Perjalanan Dinas',
+                'icon' => 'heroicon-o-paper-airplane',
+                'keys' => ['perjadin_dalam_provinsi'],
+            ],
+        ];
+
+        $activeGroup = $activeGroup ?? 'semua';
         $currentData = $categories[$activeCategory] ?? $categories['gaji_asn'];
         $items = $currentData['items'];
         $filteredCategories = $categories;
@@ -1777,42 +1816,169 @@ $categories = [
             <!-- TAB 1: DAFTAR & CEKLIS BERKAS INTERAKTIF                   -->
             <!-- ========================================================== -->
             @if($activeTab === 'ceklis')
-                <!-- Category Filter Tabs Bar -->
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                        <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; display: flex; align-items: center; gap: 6px;">
-                            <x-heroicon-o-folder style="width: 16px; height: 16px;" /> Pilih Kategori Transaksi Pengeluaran
-                        </span>
+                <!-- Category Navigation Box -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px 22px; margin-bottom: 24px; box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04);">
+                    
+                    <!-- Header Controls: Title, Group Dropdown, Live Search -->
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #f1f5f9;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; display: flex; align-items: center; justify-content: center;">
+                                <x-heroicon-o-folder-open style="width: 20px; height: 20px;" />
+                            </div>
+                            <div>
+                                <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">
+                                    PILIH KATEGORI TRANSAKSI PENGELUARAN
+                                </h3>
+                                <span style="font-size: 11.5px; color: #64748b;">
+                                    Total <strong>{{ count($categories) }} Kategori Transaksi</strong> Terdaftar
+                                </span>
+                            </div>
+                        </div>
 
-                        <!-- Search Input Box -->
-                        <div style="position: relative; min-width: 240px;">
-                            <input 
-                                type="text" 
-                                wire:model.live.debounce.300ms="searchQuery" 
-                                placeholder="Cari nama berkas / kata kunci..." 
-                                style="width: 100%; padding: 7px 12px 7px 32px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; transition: border-color 0.2s;"
-                            />
-                            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><x-heroicon-m-magnifying-glass style="width: 16px; height: 16px;" /></span>
+                        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                            <!-- Group Select Dropdown -->
+                            <div style="position: relative; min-width: 220px;">
+                                <select 
+                                    wire:model.live="activeCategory" 
+                                    style="width: 100%; padding: 8px 32px 8px 12px; font-size: 12.5px; font-weight: 600; color: #1e293b; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; cursor: pointer; transition: all 0.2s;"
+                                >
+                                    <option value="" disabled>-- Pilih Kategori Transaksi --</option>
+                                    @foreach($groups as $gKey => $gVal)
+                                        <optgroup label="{{ $gVal['nama'] }}">
+                                            @foreach($gVal['keys'] as $cKey)
+                                                @if(isset($categories[$cKey]))
+                                                    <option value="{{ $cKey }}" {{ $activeCategory === $cKey ? 'selected' : '' }}>
+                                                        {{ $categories[$cKey]['nama'] }} ({{ count($categories[$cKey]['items']) }} Berkas)
+                                                    </option>
+                                                @endif
+                                            @endforeach
+                                        </optgroup>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Live Search Box -->
+                            <div style="position: relative; min-width: 240px;">
+                                <input 
+                                    type="text" 
+                                    wire:model.live.debounce.300ms="searchQuery" 
+                                    placeholder="Cari kata kunci / nama berkas..." 
+                                    style="width: 100%; padding: 8px 12px 8px 34px; font-size: 12.5px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; background: #ffffff; transition: all 0.2s;"
+                                />
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; display: flex; align-items: center;">
+                                    <x-heroicon-m-magnifying-glass style="width: 16px; height: 16px;" />
+                                </span>
+                                @if(!empty($searchQuery))
+                                    <button 
+                                        type="button" 
+                                        wire:click="$set('searchQuery', '')" 
+                                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px;"
+                                        title="Hapus kata kunci"
+                                    >
+                                        <x-heroicon-m-x-mark style="width: 14px; height: 14px;" />
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        @foreach($filteredCategories as $key => $cat)
+                    <!-- Group Filter Chips Bar -->
+                    <div style="display: flex; align-items: center; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; scrollbar-width: thin;">
+                        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; white-space: nowrap;">
+                            Kelompok:
+                        </span>
+
+                        <button 
+                            type="button" 
+                            wire:click="setGroup('semua')" 
+                            style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; border: 1px solid; cursor: pointer; transition: all 0.2s ease; {{ $activeGroup === 'semua' ? 'background: #312e81; color: #ffffff; border-color: #1e1b4b;' : 'background: #f1f5f9; color: #475569; border-color: #e2e8f0;' }}"
+                        >
+                            <span>Semua</span>
+                            <span style="padding: 0 6px; border-radius: 999px; font-size: 10.5px; {{ $activeGroup === 'semua' ? 'background: rgba(255,255,255,0.2); color: #fff;' : 'background: #e2e8f0; color: #64748b;' }}">
+                                {{ count($categories) }}
+                            </span>
+                        </button>
+
+                        @foreach($groups as $gKey => $gVal)
                             @php
-                                $isActive = ($activeCategory === $key);
+                                $isGroupActive = ($activeGroup === $gKey);
+                                $groupCatCount = count($gVal['keys']);
                             @endphp
                             <button 
                                 type="button" 
-                                wire:click="setCategory('{{ $key }}')" 
-                                style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 10px; font-size: 12.5px; font-weight: 700; border: 1px solid; cursor: pointer; transition: all 0.2s ease; {{ $isActive ? 'background: #4f46e5; color: #ffffff; border-color: #4338ca; box-shadow: 0 3px 10px rgba(79,70,229,0.3);' : 'background: #f8fafc; color: #334155; border-color: #e2e8f0;' }}"
+                                wire:click="setGroup('{{ $gKey }}')" 
+                                style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; border: 1px solid; cursor: pointer; transition: all 0.2s ease; {{ $isGroupActive ? 'background: #4f46e5; color: #ffffff; border-color: #4338ca; box-shadow: 0 2px 6px rgba(79,70,229,0.3);' : 'background: #f8fafc; color: #475569; border-color: #e2e8f0;' }}"
                             >
-                                <x-dynamic-component :component="$cat['icon']" style="width: 16px; height: 16px;" />
-                                <span>{{ $cat['nama'] }}</span>
-                                <span style="display: inline-block; padding: 1px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; {{ $isActive ? 'background: rgba(255,255,255,0.25); color: #ffffff;' : 'background: #e2e8f0; color: #64748b;' }}">
-                                    {{ count($cat['items']) }}
+                                <x-dynamic-component :component="$gVal['icon']" style="width: 14px; height: 14px;" />
+                                <span>{{ $gVal['nama'] }}</span>
+                                <span style="padding: 0 6px; border-radius: 999px; font-size: 10.5px; {{ $isGroupActive ? 'background: rgba(255,255,255,0.25); color: #fff;' : 'background: #e2e8f0; color: #64748b;' }}">
+                                    {{ $groupCatCount }}
                                 </span>
                             </button>
                         @endforeach
+                    </div>
+
+                    <!-- Category Grid Cards -->
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        @foreach($groups as $gKey => $gVal)
+                            @php
+                                if ($activeGroup !== 'semua' && $activeGroup !== $gKey) {
+                                    continue;
+                                }
+                                $matchingKeysInGroup = array_filter($gVal['keys'], function($k) use ($filteredCategories) {
+                                    return isset($filteredCategories[$k]);
+                                });
+                            @endphp
+
+                            @if(count($matchingKeysInGroup) > 0)
+                                <div>
+                                    @if($activeGroup === 'semua' || empty($searchQuery))
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 11.5px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em;">
+                                            <x-dynamic-component :component="$gVal['icon']" style="width: 15px; height: 15px; color: #4f46e5;" />
+                                            <span>{{ $gVal['nama'] }}</span>
+                                            <span style="color: #cbd5e1; font-weight: normal;">•</span>
+                                            <span style="color: #94a3b8; font-weight: 600;">{{ count($matchingKeysInGroup) }} kategori</span>
+                                        </div>
+                                    @endif
+
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;">
+                                        @foreach($matchingKeysInGroup as $catKey)
+                                            @php
+                                                $cat = $categories[$catKey];
+                                                $isActive = ($activeCategory === $catKey);
+                                            @endphp
+                                            <button 
+                                                type="button" 
+                                                wire:click="setCategory('{{ $catKey }}')" 
+                                                style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; font-weight: 700; border: 1.5px solid; cursor: pointer; text-align: left; transition: all 0.2s ease; {{ $isActive ? 'background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); color: #ffffff; border-color: #3730a3; box-shadow: 0 4px 14px rgba(79,70,229,0.35); transform: translateY(-1px);' : 'background: #ffffff; color: #1e293b; border-color: #e2e8f0;' }}"
+                                            >
+                                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                                    <div style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; {{ $isActive ? 'background: rgba(255,255,255,0.2); color: #ffffff;' : 'background: #f1f5f9; color: #4f46e5;' }}">
+                                                        <x-dynamic-component :component="$cat['icon']" style="width: 18px; height: 18px;" />
+                                                    </div>
+                                                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;">
+                                                        {{ $cat['nama'] }}
+                                                    </span>
+                                                </div>
+                                                <span style="display: inline-flex; align-items: center; justify-content: center; padding: 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 800; flex-shrink: 0; {{ $isActive ? 'background: rgba(255,255,255,0.25); color: #ffffff;' : 'background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;' }}">
+                                                    {{ count($cat['items']) }}
+                                                </span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+
+                        @if(count($filteredCategories) === 0)
+                            <div style="padding: 24px; text-align: center; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                                <x-heroicon-o-magnifying-glass style="width: 28px; height: 28px; margin: 0 auto 8px; color: #cbd5e1;" />
+                                <p style="font-size: 13px; font-weight: 600; margin: 0;">Tidak ditemukan kategori transaksi yang sesuai dengan kata kunci "{{ $searchQuery }}".</p>
+                                <button type="button" wire:click="$set('searchQuery', '')" style="margin-top: 8px; font-size: 12px; color: #4f46e5; background: none; border: none; font-weight: 700; cursor: pointer; text-decoration: underline;">
+                                    Reset pencarian
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
