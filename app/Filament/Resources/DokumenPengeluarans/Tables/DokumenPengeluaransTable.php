@@ -275,13 +275,16 @@ class DokumenPengeluaransTable
 
                 // === AKSI PEMBAYARAN (Bendahara) ===
                 Action::make('bayar')
-                    ->label('Bayar / Input SPJ')
+                    ->label('Bayar / Input No. BKU')
                     ->icon('heroicon-o-currency-dollar')
                     ->color('success')
+                    ->modalHeading('Pencairan Dana & Input No. BKU')
+                    ->modalDescription('Masukkan No. BKU untuk mencatat realisasi pembayaran dokumen pengeluaran ini.')
+                    ->modalSubmitActionLabel('Kirim')
                     ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('bendahara') && $record->status === DokumenPengeluaran::STATUS_DISAHKAN)
                     ->form([
                         \Filament\Forms\Components\TextInput::make('nomor_spj')
-                            ->label('Nomor SPJ')
+                            ->label('No. BKU')
                             ->required(),
                     ])
                     ->action(function (DokumenPengeluaran $record, array $data) {
@@ -297,7 +300,7 @@ class DokumenPengeluaransTable
 
                         \Filament\Notifications\Notification::make()
                             ->title('Dana Telah Dicairkan')
-                            ->body('Dana untuk Dokumen ' . $record->kode_dokumen . ' telah dicairkan.')
+                            ->body('Dana untuk Dokumen ' . $record->kode_dokumen . ' telah dicairkan (No. BKU: ' . $data['nomor_spj'] . ').')
                             ->success()
                             ->sendToDatabase($record->pptk);
                     }),

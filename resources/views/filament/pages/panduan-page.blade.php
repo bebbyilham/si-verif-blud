@@ -106,7 +106,7 @@
                             </div>
                             <h4 style="font-weight: 700; font-size: 14px; margin: 0 0 6px; color: #0f172a;">Pembayaran (Bendahara)</h4>
                             <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin: 0;">
-                                Bendahara memproses SPJ &amp; nomor bukti bayar. Status berubah menjadi <span style="font-family: monospace; font-weight: 700; background: rgba(16,185,129,0.12); color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 11px;">dibayar</span>.
+                                Bendahara memproses No. BKU &amp; nomor bukti bayar. Status berubah menjadi <span style="font-family: monospace; font-weight: 700; background: rgba(16,185,129,0.12); color: #059669; padding: 2px 6px; border-radius: 4px; font-size: 11px;">dibayar</span>.
                             </p>
                         </div>
 
@@ -457,11 +457,11 @@
                                 💰 Bendahara
                             </div>
                             <h4 style="font-size: 15px; font-weight: 700; margin: 0 0 2px; color: #0f172a;">Bendahara Pengeluaran</h4>
-                            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Pemproses pencairan dana &amp; penerbitan nomor SPJ</p>
+                            <p style="font-size: 12px; color: #64748b; margin: 0 0 12px;">Pemproses pencairan dana &amp; penerbitan No. BKU</p>
                             <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: #334155; line-height: 1.5;">
                                 <li style="display: flex; align-items: flex-start; gap: 8px;">
                                     <span style="color: #2563eb; font-weight: bold;">✓</span>
-                                    <span><strong>Pencairan Dana:</strong> Buka dokumen berstatus <span style="font-family: monospace; font-weight: 700; background: rgba(249,115,22,0.12); color: #ea580c; padding: 2px 6px; border-radius: 4px; font-size: 11px;">disahkan</span>, inputkan nomor SPJ, tanggal pencairan, dan upload bukti transfer.</span>
+                                    <span><strong>Pencairan Dana:</strong> Buka dokumen berstatus <span style="font-family: monospace; font-weight: 700; background: rgba(249,115,22,0.12); color: #ea580c; padding: 2px 6px; border-radius: 4px; font-size: 11px;">disahkan</span>, inputkan No. BKU, tanggal pencairan, dan upload bukti transfer.</span>
                                 </li>
                                 <li style="display: flex; align-items: flex-start; gap: 8px;">
                                     <span style="color: #2563eb; font-weight: bold;">✓</span>

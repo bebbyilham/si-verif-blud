@@ -169,7 +169,7 @@ class DummyDokumenSeeder extends Seeder
             'dokumen_id' => $dok5->id,
             'bendahara_id' => $bendahara->id,
             'tanggal_bayar' => now()->subDays(2),
-            'nomor_spj' => 'SPJ-2026/08/005',
+            'nomor_spj' => 'BKU-2026/08/005',
             'status_bayar' => 'Lunas',
         ]);
 
@@ -208,7 +208,7 @@ class DummyDokumenSeeder extends Seeder
             'dokumen_id' => $dok6->id,
             'bendahara_id' => $bendahara->id,
             'tanggal_bayar' => now()->subDays(7),
-            'nomor_spj' => 'SPJ-2026/08/006',
+            'nomor_spj' => 'BKU-2026/08/006',
             'status_bayar' => 'Lunas',
         ]);
     }

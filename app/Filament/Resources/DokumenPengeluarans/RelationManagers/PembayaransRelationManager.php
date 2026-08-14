@@ -37,7 +37,7 @@ class PembayaransRelationManager extends RelationManager
                 TextColumn::make('bendahara.name')
                     ->label('Bendahara'),
                 TextColumn::make('nomor_spj')
-                    ->label('Nomor SPJ'),
+                    ->label('No. BKU'),
                 TextColumn::make('status_bayar')
                     ->badge()
                     ->color('success'),

@@ -61,7 +61,7 @@ class DokumenPengeluaranResource extends Resource
                                     'diajukan' => ['label' => '1. Diajukan', 'desc' => 'Pengajuan PPTK'],
                                     'diverifikasi' => ['label' => '2. Diverifikasi', 'desc' => 'Checklist Verifikator'],
                                     'disahkan' => ['label' => '3. Disahkan', 'desc' => 'Approval PPK'],
-                                    'dibayar' => ['label' => '4. Dibayar', 'desc' => 'SPJ Bendahara'],
+                                    'dibayar' => ['label' => '4. Dibayar', 'desc' => 'BKU Bendahara'],
                                     'diarsipkan' => ['label' => '5. Diarsipkan', 'desc' => 'Arsip Digital'],
                                 ];
 

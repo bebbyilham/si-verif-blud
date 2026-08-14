@@ -20,7 +20,7 @@ class AuditTrailObserver
         } elseif ($model instanceof Pengesahan) {
             $this->recordAudit('Pengesahan - Dok #' . $model->dokumen_id, 'pengesahans', $model->id);
         } elseif ($model instanceof Pembayaran) {
-            $this->recordAudit('Pembayaran SPJ: ' . ($model->nomor_spj ?? '-') . ' - Dok #' . $model->dokumen_id, 'pembayarans', $model->id);
+            $this->recordAudit('Pembayaran BKU: ' . ($model->nomor_spj ?? '-') . ' - Dok #' . $model->dokumen_id, 'pembayarans', $model->id);
         }
     }
 

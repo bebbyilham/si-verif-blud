@@ -225,19 +225,19 @@ class ViewDokumenPengeluaran extends ViewRecord
                         ->send();
                 }),
 
-            // === AKSI BENDAHARA: BAYAR / INPUT SPJ ===
+            // === AKSI BENDAHARA: BAYAR / INPUT BKU ===
             Action::make('bayar')
-                ->label('Bayar / Input SPJ')
+                ->label('Bayar / Input No. BKU')
                 ->icon('heroicon-o-currency-dollar')
                 ->color('success')
-                ->modalHeading('Pencairan Dana & Input Nomor SPJ')
-                ->modalDescription('Masukkan nomor SPJ untuk mencatat realisasi pembayaran dokumen pengeluaran ini.')
+                ->modalHeading('Pencairan Dana & Input No. BKU')
+                ->modalDescription('Masukkan No. BKU untuk mencatat realisasi pembayaran dokumen pengeluaran ini.')
                 ->modalSubmitActionLabel('Konfirmasi Pembayaran')
                 ->visible(fn () => auth()->user()?->hasRole('bendahara') && $this->getRecord()->status === DokumenPengeluaran::STATUS_DISAHKAN)
                 ->form([
                     TextInput::make('nomor_spj')
-                        ->label('Nomor SPJ')
-                        ->placeholder('Contoh: SPJ/BLUD/2026/001')
+                        ->label('No. BKU')
+                        ->placeholder('Contoh: BKU/BLUD/2026/001')
                         ->required(),
                 ])
                 ->action(function (array $data) {
@@ -255,7 +255,7 @@ class ViewDokumenPengeluaran extends ViewRecord
 
                     Notification::make()
                         ->title('Dana Telah Dicairkan')
-                        ->body('Dana untuk Dokumen ' . $record->kode_dokumen . ' telah dicairkan (No. SPJ: ' . $data['nomor_spj'] . ').')
+                        ->body('Dana untuk Dokumen ' . $record->kode_dokumen . ' telah dicairkan (No. BKU: ' . $data['nomor_spj'] . ').')
                         ->success()
                         ->sendToDatabase($record->pptk);
 
