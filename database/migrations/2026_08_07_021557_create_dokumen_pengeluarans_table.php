@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('kode_dokumen', 30)->unique();
             $table->foreignId('bidang_id')->constrained('bidangs');
             $table->foreignId('pptk_id')->constrained('users');
-            $table->string('jenis_dokumen', 50);
+            $table->string('jenis_dokumen', 255);
             $table->enum('sumber_dana', ['BLUD', 'APBD']);
             $table->decimal('nominal', 15, 2);
             $table->date('tanggal_ajuan');

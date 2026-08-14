@@ -15,11 +15,11 @@ class JenisDokumenForm
                 TextInput::make('kode_jenis')
                     ->label('Kode Jenis')
                     ->required()
-                    ->maxLength(30),
+                    ->maxLength(255),
                 TextInput::make('nama_jenis')
                     ->label('Nama Jenis Dokumen')
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(255),
                 Textarea::make('deskripsi')
                     ->label('Deskripsi')
                     ->columnSpanFull(),
