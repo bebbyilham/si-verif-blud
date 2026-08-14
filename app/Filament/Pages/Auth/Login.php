@@ -12,6 +12,11 @@ class Login extends BaseLogin
 {
     protected string $view = 'filament.pages.auth.login';
 
+    public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
+    {
+        return 'SI-VERIF BLUD - Sistem Verifikasi Dokumen Pengeluaran';
+    }
+
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')

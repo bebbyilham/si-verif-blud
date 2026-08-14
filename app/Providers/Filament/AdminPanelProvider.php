@@ -73,11 +73,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->renderHook(
-                \Filament\View\PanelsRenderHook::HEAD_END,
-                fn (): string => \Illuminate\Support\Facades\Blade::render('
-                    <link rel="icon" type="image/svg+xml" href="{{ asset("favicon.svg") }}">
-                    <link rel="stylesheet" href="{{ asset("css/glassmorphism-indigo.css") }}">
-                ')
+                \Filament\View\PanelsRenderHook::HEAD_START,
+                fn (): string => view('filament.meta-tags')->render()
             )
             ->renderHook(
                 \Filament\View\PanelsRenderHook::BODY_START,
