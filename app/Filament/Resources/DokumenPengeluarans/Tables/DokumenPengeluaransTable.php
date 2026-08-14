@@ -329,7 +329,7 @@ class DokumenPengeluaransTable
     /**
      * Helper: render lampiran modal content (menghindari duplikasi HTML).
      */
-    private static function renderLampiranModal(DokumenPengeluaran $record): HtmlString
+    public static function renderLampiranModal(DokumenPengeluaran $record): HtmlString
     {
         $files = $record->file_path;
         if (is_string($files)) {

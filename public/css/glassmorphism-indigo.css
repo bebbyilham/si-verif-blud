@@ -1720,3 +1720,129 @@ div[x-ref="notificationsContainer"]::-webkit-scrollbar-thumb {
 .dark .split-login-left button svg {
     color: #64748b !important;
 }
+
+/* ============================================================
+   Action Buttons Typography & Color Overrides (Font Putih)
+   ============================================================ */
+
+.fi-page-header-actions .fi-btn,
+.fi-header-actions .fi-btn,
+.fi-ac .fi-btn,
+.fi-btn {
+    font-weight: 600 !important;
+}
+
+/* Force crisp WHITE font and icons for action buttons */
+.fi-page-header-actions .fi-btn .fi-btn-label,
+.fi-page-header-actions .fi-btn svg,
+.fi-page-header-actions .fi-btn .fi-btn-icon,
+.fi-header-actions .fi-btn .fi-btn-label,
+.fi-header-actions .fi-btn svg,
+.fi-header-actions .fi-btn .fi-btn-icon,
+.fi-btn-color-success .fi-btn-label,
+.fi-btn-color-success .fi-btn-icon,
+.fi-btn-color-success svg,
+.fi-color-success.fi-btn .fi-btn-label,
+.fi-color-success.fi-btn .fi-btn-icon,
+.fi-color-success.fi-btn svg,
+.fi-btn-color-warning .fi-btn-label,
+.fi-btn-color-warning .fi-btn-icon,
+.fi-btn-color-warning svg,
+.fi-color-warning.fi-btn .fi-btn-label,
+.fi-color-warning.fi-btn .fi-btn-icon,
+.fi-color-warning.fi-btn svg,
+.fi-btn-color-info .fi-btn-label,
+.fi-btn-color-info .fi-btn-icon,
+.fi-btn-color-info svg,
+.fi-color-info.fi-btn .fi-btn-label,
+.fi-color-info.fi-btn .fi-btn-icon,
+.fi-color-info.fi-btn svg,
+.fi-btn-color-danger .fi-btn-label,
+.fi-btn-color-danger .fi-btn-icon,
+.fi-btn-color-danger svg,
+.fi-color-danger.fi-btn .fi-btn-label,
+.fi-color-danger.fi-btn .fi-btn-icon,
+.fi-color-danger.fi-btn svg,
+.fi-btn-color-primary .fi-btn-label,
+.fi-btn-color-primary .fi-btn-icon,
+.fi-btn-color-primary svg,
+.fi-color-primary.fi-btn .fi-btn-label,
+.fi-color-primary.fi-btn .fi-btn-icon,
+.fi-color-primary.fi-btn svg,
+.fi-btn-color-gray .fi-btn-label,
+.fi-btn-color-gray .fi-btn-icon,
+.fi-btn-color-gray svg,
+.fi-color-gray.fi-btn .fi-btn-label,
+.fi-color-gray.fi-btn .fi-btn-icon,
+.fi-color-gray.fi-btn svg {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Ensure solid rich background for colored action buttons so white text stands out cleanly */
+.fi-btn-color-success,
+.fi-color-success.fi-btn {
+    background-color: #10b981 !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
+}
+
+.fi-btn-color-success:hover,
+.fi-color-success.fi-btn:hover {
+    background-color: #059669 !important;
+    border-color: #047857 !important;
+}
+
+.fi-btn-color-danger,
+.fi-color-danger.fi-btn {
+    background-color: #ef4444 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+.fi-btn-color-danger:hover,
+.fi-color-danger.fi-btn:hover {
+    background-color: #dc2626 !important;
+    border-color: #b91c1c !important;
+}
+
+.fi-btn-color-info,
+.fi-color-info.fi-btn {
+    background-color: #3b82f6 !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+.fi-btn-color-info:hover,
+.fi-color-info.fi-btn:hover {
+    background-color: #2563eb !important;
+    border-color: #1d4ed8 !important;
+}
+
+.fi-btn-color-warning,
+.fi-color-warning.fi-btn {
+    background-color: #f59e0b !important;
+    border-color: #d97706 !important;
+    color: #ffffff !important;
+}
+
+.fi-btn-color-warning:hover,
+.fi-color-warning.fi-btn:hover {
+    background-color: #d97706 !important;
+    border-color: #b45309 !important;
+}
+
+.fi-btn-color-primary,
+.fi-color-primary.fi-btn {
+    background-color: #4f46e5 !important;
+    border-color: #4338ca !important;
+    color: #ffffff !important;
+}
+
+.fi-btn-color-primary:hover,
+.fi-color-primary.fi-btn:hover {
+    background-color: #4338ca !important;
+    border-color: #3730a3 !important;
+}
+
+
