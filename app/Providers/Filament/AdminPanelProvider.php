@@ -2,21 +2,29 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Dashboard;
+use App\Filament\Widgets\DokumenChart;
+use App\Filament\Widgets\KoreksiPerBidangChart;
+use App\Filament\Widgets\PengeluaranChart;
+use App\Filament\Widgets\StatsOverviewWidget;
+use App\Filament\Widgets\WaktuVerifikasiChart;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use App\Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -27,7 +35,9 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\Login::class)
+            ->login(Login::class)
+            ->profile(EditProfile::class, isSimple: false)
+            ->profile(\App\Filament\Pages\Auth\EditProfile::class, isSimple: false)
             ->brandName('Sistem Verifikasi BLUD')
             ->favicon(asset('favicon.svg'))
             ->font('Inter')
@@ -37,7 +47,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(false)
             ->globalSearch(false)
             ->colors([
-                'primary' => \Filament\Support\Colors\Color::Indigo,
+                'primary' => Color::Indigo,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -51,11 +61,11 @@ class AdminPanelProvider extends PanelProvider
                 'Informasi & Bantuan',
             ])
             ->widgets([
-                \App\Filament\Widgets\StatsOverviewWidget::class,
-                \App\Filament\Widgets\PengeluaranChart::class,
-                \App\Filament\Widgets\DokumenChart::class,
-                \App\Filament\Widgets\KoreksiPerBidangChart::class,
-                \App\Filament\Widgets\WaktuVerifikasiChart::class,
+                StatsOverviewWidget::class,
+                PengeluaranChart::class,
+                DokumenChart::class,
+                KoreksiPerBidangChart::class,
+                WaktuVerifikasiChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -69,16 +79,16 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                FilamentShieldPlugin::make(),
             ])
             ->databaseNotifications()
             ->renderHook(
-                \Filament\View\PanelsRenderHook::HEAD_START,
+                PanelsRenderHook::HEAD_START,
                 fn (): string => view('filament.meta-tags')->render()
             )
             ->renderHook(
-                \Filament\View\PanelsRenderHook::BODY_START,
-                fn (): string => \Illuminate\Support\Facades\Blade::render('
+                PanelsRenderHook::BODY_START,
+                fn (): string => Blade::render('
                     <div class="background-blobs">
                         <div class="blob blob-1"></div>
                         <div class="blob blob-2"></div>

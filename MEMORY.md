@@ -74,4 +74,5 @@
 | **2026-08-15+** | UI Theme & Pages | Implementasi tema `glassmorphism-indigo.css`, halaman login split-screen dengan pratinjau statistik real-time, halaman ceklis interaktif `KelengkapanBerkasPage`, halaman `PanduanPage`, serta timeline visual 5-tahap di `ViewDokumenPengeluaran`. |
 | **2026-11-09** | Agent & Memory | Penerapan standar `AGENTS.md`, inisialisasi memori persisten `MEMORY.md`, `GEMINI.md`, dan aturan sinkronisasi `.agents/rules/claude-mem.md`. |
 | **2026-11-09** | Blackbox Follow-up | Implementasi penyimpanan `draft` (`STATUS_DRAFT` + `ajukan_draft`), aksi mundur status (`verifikasi_kembalikan` lintas tahap & `kembalikan_tahap`), isolasi `DokumenChart` untuk PPTK Keuangan, serta perbaikan kalkulasi `StatsOverviewWidget` di seluruh role. |
+| **2026-11-09** | Password Management | Penambahan halaman `EditProfile` (`/admin/profile`) untuk ubah password mandiri semua role serta aksi `reset_password` pada `UsersTable` & perbaikan `UserForm` untuk Super Admin/Admin. |
 
