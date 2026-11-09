@@ -6,28 +6,16 @@
     <!-- Filter Bar Header / Main Toolbar (Transparent Container, No White Box) -->
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 4px 0; background: transparent; border: none; box-shadow: none;" class="period-filter-toolbar">
         
-        <!-- Left Pill Container: Timeline / List view toggle -->
-        <div style="display: inline-flex; align-items: center; padding: 3px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(99, 102, 241, 0.05); gap: 2px;" class="period-filter-pill-group">
-            <button 
-                type="button" 
-                @click="viewMode = 'timeline'; $wire.set('filters.view', 'timeline')"
-                :style="viewMode === 'timeline' 
-                    ? 'background: #ffffff; color: #0f172a; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.08);' 
-                    : 'background: transparent; color: #64748b; font-weight: 500;'"
-                style="padding: 6px 14px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;"
-                class="period-filter-pill-btn">
-                Timeline
-            </button>
-            <button 
-                type="button" 
-                @click="viewMode = 'list'; $wire.set('filters.view', 'list')"
-                :style="viewMode === 'list' 
-                    ? 'background: #ffffff; color: #0f172a; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.08);' 
-                    : 'background: transparent; color: #64748b; font-weight: 500;'"
-                style="padding: 6px 14px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;"
-                class="period-filter-pill-btn">
-                List
-            </button>
+        <!-- Left Pill Container: Context Indicator -->
+        <div style="display: inline-flex; align-items: center; padding: 6px 14px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(99, 102, 241, 0.05); gap: 8px;" class="period-filter-pill-group">
+            <span style="width: 8px; height: 8px; border-radius: 9999px; background: #4f46e5; display: inline-block;"></span>
+            <span style="font-size: 12px; font-weight: 700; color: #0f172a;">
+                @if(auth()->user()?->hasRole('pptk') && auth()->user()?->bidang)
+                    Bidang {{ auth()->user()->bidang->nama_bidang }}
+                @else
+                    Ringkasan Real-Time
+                @endif
+            </span>
         </div>
 
         <!-- Right Pill Container: Period Presets -->
@@ -49,7 +37,7 @@
             <button 
                 type="button" 
                 @click="$wire.setPeriodPreset('7D')"
-                :style="($wire.filters?.period === '7D' || !$wire.filters?.period) 
+                :style="$wire.filters?.period === '7D' 
                     ? 'background: #ffffff; color: #0f172a; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.08);' 
                     : 'background: transparent; color: #64748b; font-weight: 500;'"
                 style="padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;"
@@ -112,7 +100,7 @@
             <button 
                 type="button" 
                 @click="$wire.setPeriodPreset('all')"
-                :style="$wire.filters?.period === 'all' 
+                :style="($wire.filters?.period === 'all' || !$wire.filters?.period) 
                     ? 'background: #ffffff; color: #0f172a; font-weight: 700; box-shadow: 0 2px 4px rgba(0,0,0,0.08);' 
                     : 'background: transparent; color: #64748b; font-weight: 500;'"
                 style="padding: 6px 12px; font-size: 12px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s;"

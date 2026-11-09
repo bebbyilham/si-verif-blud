@@ -4,10 +4,18 @@ namespace App\Filament\Resources\DokumenPengeluarans\Tables;
 
 use App\Models\DokumenPengeluaran;
 use App\Models\JenisKesalahan;
+use App\Models\Pembayaran;
+use App\Models\Pengesahan;
+use App\Models\RiwayatKoreksi;
+use App\Models\User;
+use App\Models\Verifikasi;
 use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -28,7 +36,7 @@ class DokumenPengeluaransTable
                 TextColumn::make('sumber_dana')
                     ->badge(),
                 TextColumn::make('nominal')
-                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format((float) $state, 0, ',', '.'))
+                    ->formatStateUsing(fn ($state) => 'Rp '.number_format((float) $state, 0, ',', '.'))
                     ->sortable(),
                 TextColumn::make('tanggal_ajuan')
                     ->date('d M Y')
@@ -36,6 +44,7 @@ class DokumenPengeluaransTable
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
+                        DokumenPengeluaran::STATUS_DRAFT => 'gray',
                         DokumenPengeluaran::STATUS_DIAJUKAN => 'warning',
                         DokumenPengeluaran::STATUS_DIVERIFIKASI => 'info',
                         DokumenPengeluaran::STATUS_DIKEMBALIKAN => 'danger',
@@ -59,16 +68,16 @@ class DokumenPengeluaransTable
                             return '-';
                         }
 
-                        $label = $total . ' File';
+                        $label = $total.' File';
 
-                        return new HtmlString('<span style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 10px; border-radius: 6px; background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;">' .
-                            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px; display: inline-block; flex-shrink: 0; vertical-align: middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>' .
-                            '<span style="line-height: 1; vertical-align: middle; white-space: nowrap;">' . e($label) . '</span>' .
+                        return new HtmlString('<span style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 10px; border-radius: 6px; background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap;">'.
+                            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; min-width: 14px; min-height: 14px; display: inline-block; flex-shrink: 0; vertical-align: middle;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>'.
+                            '<span style="line-height: 1; vertical-align: middle; white-space: nowrap;">'.e($label).'</span>'.
                             '</span>');
                     })
                     ->action(
                         Action::make('lihat_lampiran_modal')
-                            ->modalHeading(fn (DokumenPengeluaran $record) => 'Daftar Dokumen Lampiran - ' . $record->kode_dokumen)
+                            ->modalHeading(fn (DokumenPengeluaran $record) => 'Daftar Dokumen Lampiran - '.$record->kode_dokumen)
                             ->modalSubmitAction(false)
                             ->modalCancelActionLabel('Tutup')
                             ->modalContent(fn (DokumenPengeluaran $record) => static::renderLampiranModal($record))
@@ -91,11 +100,11 @@ class DokumenPengeluaransTable
                     ->iconButton()
                     ->color('info')
                     ->tooltip('Lihat Daftar Lampiran')
-                    ->modalHeading(fn (DokumenPengeluaran $record) => 'Daftar Dokumen Lampiran - ' . $record->kode_dokumen)
+                    ->modalHeading(fn (DokumenPengeluaran $record) => 'Daftar Dokumen Lampiran - '.$record->kode_dokumen)
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Tutup')
                     ->modalContent(fn (DokumenPengeluaran $record) => static::renderLampiranModal($record)),
-                \Filament\Actions\ViewAction::make()
+                ViewAction::make()
                     ->label('Lihat Detail')
                     ->iconButton()
                     ->tooltip('Lihat Detail Dokumen'),
@@ -103,7 +112,52 @@ class DokumenPengeluaransTable
                     ->label('Edit Dokumen')
                     ->iconButton()
                     ->tooltip('Edit / Perbaiki Dokumen')
-                    ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('pptk') && in_array($record->status, [DokumenPengeluaran::STATUS_DIAJUKAN, DokumenPengeluaran::STATUS_DIKEMBALIKAN])),
+                    ->visible(fn (DokumenPengeluaran $record) => (auth()->user()->hasRole('pptk') && in_array($record->status, [
+                        DokumenPengeluaran::STATUS_DRAFT,
+                        DokumenPengeluaran::STATUS_DIAJUKAN,
+                        DokumenPengeluaran::STATUS_DIKEMBALIKAN,
+                    ])) || auth()->user()->hasAnyRole(['super_admin', 'admin'])),
+
+                // === AKSI PPTK / ADMIN: AJUKAN DOKUMEN DRAFT ===
+                Action::make('ajukan_draft')
+                    ->label('Ajukan')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->iconButton()
+                    ->tooltip('Ajukan Dokumen Draft ke Verifikator')
+                    ->requiresConfirmation()
+                    ->modalHeading('Ajukan Dokumen Draft ke Verifikator')
+                    ->modalDescription('Pastikan seluruh data dan dokumen lampiran telah lengkap. Setelah diajukan, dokumen akan masuk ke antrean Verifikator.')
+                    ->modalSubmitActionLabel('Ya, Ajukan Sekarang')
+                    ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasAnyRole(['pptk', 'super_admin', 'admin']) && $record->status === DokumenPengeluaran::STATUS_DRAFT)
+                    ->action(function (DokumenPengeluaran $record) {
+                        if (! $record->hasValidLampiran()) {
+                            Notification::make()
+                                ->title('Lampiran Belum Lengkap')
+                                ->body('Silakan edit dokumen dan unggah minimal 1 file PDF atau tautan Google Drive sebelum mengajukan.')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        $record->update(['status' => DokumenPengeluaran::STATUS_DIAJUKAN]);
+
+                        $verifikators = User::role('verifikator')->get();
+                        if ($verifikators->isNotEmpty()) {
+                            Notification::make()
+                                ->title('Dokumen Baru Diajukan')
+                                ->body('Dokumen '.$record->kode_dokumen.' telah diajukan oleh PPTK ('.auth()->user()->name.') dan menunggu verifikasi.')
+                                ->success()
+                                ->sendToDatabase($verifikators);
+                        }
+
+                        Notification::make()
+                            ->title('Dokumen Berhasil Diajukan')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah dikirimkan ke Verifikator.')
+                            ->success()
+                            ->send();
+                    }),
 
                 // === AKSI PPTK (Kirim Ulang Dokumen Dikembalikan) ===
                 Action::make('kirim_ulang')
@@ -117,7 +171,7 @@ class DokumenPengeluaransTable
                     ->modalSubmitActionLabel('Kirim Ulang ke Verifikator')
                     ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('pptk') && $record->status === DokumenPengeluaran::STATUS_DIKEMBALIKAN)
                     ->form([
-                        \Filament\Forms\Components\Textarea::make('catatan_perbaikan')
+                        Textarea::make('catatan_perbaikan')
                             ->label('Catatan Perbaikan / Kelengkapan (Opsional)')
                             ->placeholder('Jelaskan bagian data atau lampiran yang telah Anda perbaiki...'),
                     ])
@@ -125,18 +179,18 @@ class DokumenPengeluaransTable
                         $record->update(['status' => DokumenPengeluaran::STATUS_DIAJUKAN]);
 
                         // Notifikasi ke Verifikator
-                        $verifikators = \App\Models\User::role('verifikator')->get();
+                        $verifikators = User::role('verifikator')->get();
                         if ($verifikators->isNotEmpty()) {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Dokumen Diajukan Ulang')
-                                ->body('Dokumen ' . $record->kode_dokumen . ' telah diperbaiki oleh PPTK (' . auth()->user()->name . ') dan diajukan ulang untuk verifikasi.')
+                                ->body('Dokumen '.$record->kode_dokumen.' telah diperbaiki oleh PPTK ('.auth()->user()->name.') dan diajukan ulang untuk verifikasi.')
                                 ->info()
                                 ->sendToDatabase($verifikators);
                         }
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Dokumen Berhasil Diajukan Ulang')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah dikirimkan ke Verifikator untuk diperiksa kembali.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah dikirimkan ke Verifikator untuk diperiksa kembali.')
                             ->success()
                             ->send();
                     }),
@@ -153,13 +207,13 @@ class DokumenPengeluaransTable
                     ->modalSubmitActionLabel('Setujui & Verifikasi')
                     ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('verifikator') && in_array($record->status, [DokumenPengeluaran::STATUS_DIAJUKAN, DokumenPengeluaran::STATUS_DIKEMBALIKAN]))
                     ->form([
-                        \Filament\Forms\Components\Textarea::make('catatan')
+                        Textarea::make('catatan')
                             ->label('Catatan Verifikasi (Opsional)')
                             ->placeholder('Masukkan catatan verifikasi jika ada...'),
                     ])
                     ->action(function (DokumenPengeluaran $record, array $data) {
                         // Simpan record verifikasi
-                        \App\Models\Verifikasi::create([
+                        Verifikasi::create([
                             'dokumen_id' => $record->id,
                             'verifikator_id' => auth()->id(),
                             'hasil' => 'lolos',
@@ -169,18 +223,18 @@ class DokumenPengeluaransTable
 
                         $record->update(['status' => DokumenPengeluaran::STATUS_DIVERIFIKASI]);
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Dokumen Diverifikasi')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah lolos verifikasi dan menunggu pengesahan PPK.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah lolos verifikasi dan menunggu pengesahan PPK.')
                             ->success()
                             ->sendToDatabase($record->pptk);
 
                         // Notifikasi ke PPK
-                        $ppkUsers = \App\Models\User::role('ppk')->get();
+                        $ppkUsers = User::role('ppk')->get();
                         if ($ppkUsers->isNotEmpty()) {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Dokumen Menunggu Pengesahan')
-                                ->body('Dokumen ' . $record->kode_dokumen . ' telah diverifikasi dan menunggu pengesahan Anda.')
+                                ->body('Dokumen '.$record->kode_dokumen.' telah diverifikasi dan menunggu pengesahan Anda.')
                                 ->info()
                                 ->sendToDatabase($ppkUsers);
                         }
@@ -195,21 +249,57 @@ class DokumenPengeluaransTable
                     ->modalHeading('Kembalikan Dokumen ke PPTK (Revisi)')
                     ->modalDescription('Dokumen akan dikembalikan ke PPTK beserta catatan jenis kesalahan untuk diperbaiki.')
                     ->modalSubmitActionLabel('Kembalikan Dokumen')
-                    ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('verifikator') && in_array($record->status, [DokumenPengeluaran::STATUS_DIAJUKAN, DokumenPengeluaran::STATUS_DIKEMBALIKAN]))
+                    ->visible(function (DokumenPengeluaran $record): bool {
+                        $user = auth()->user();
+                        if (! $user) {
+                            return false;
+                        }
+
+                        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+                            return in_array($record->status, [
+                                DokumenPengeluaran::STATUS_DIAJUKAN,
+                                DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                                DokumenPengeluaran::STATUS_DISAHKAN,
+                                DokumenPengeluaran::STATUS_DIBAYAR,
+                            ]);
+                        }
+
+                        if ($user->hasRole('verifikator') && in_array($record->status, [
+                            DokumenPengeluaran::STATUS_DIAJUKAN,
+                            DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                        ])) {
+                            return true;
+                        }
+
+                        if ($user->hasRole('ppk') && in_array($record->status, [
+                            DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                            DokumenPengeluaran::STATUS_DISAHKAN,
+                        ])) {
+                            return true;
+                        }
+
+                        if ($user->hasRole('bendahara') && $record->status === DokumenPengeluaran::STATUS_DISAHKAN) {
+                            return true;
+                        }
+
+                        return false;
+                    })
                     ->form([
-                        \Filament\Forms\Components\Select::make('jenis_kesalahan_id')
+                        Select::make('jenis_kesalahan_id')
                             ->label('Kategori Jenis Kesalahan')
                             ->options(JenisKesalahan::pluck('nama_kesalahan', 'id'))
                             ->searchable()
                             ->required(),
-                        \Filament\Forms\Components\Textarea::make('catatan')
+                        Textarea::make('catatan')
                             ->label('Catatan Revisi / Alasan Pengembalian')
                             ->placeholder('Jelaskan detail bagian dokumen yang perlu diperbaiki oleh PPTK...')
                             ->required(),
                     ])
                     ->action(function (DokumenPengeluaran $record, array $data) {
+                        $previousStatus = $record->status;
+
                         // Simpan record verifikasi
-                        \App\Models\Verifikasi::create([
+                        Verifikasi::create([
                             'dokumen_id' => $record->id,
                             'verifikator_id' => auth()->id(),
                             'hasil' => 'dikembalikan',
@@ -218,7 +308,7 @@ class DokumenPengeluaransTable
                         ]);
 
                         // Buat riwayat koreksi otomatis
-                        \App\Models\RiwayatKoreksi::create([
+                        RiwayatKoreksi::create([
                             'dokumen_id' => $record->id,
                             'versi_ke' => $record->riwayatKoreksis()->count() + 1,
                             'jenis_kesalahan_id' => $data['jenis_kesalahan_id'] ?? null,
@@ -229,11 +319,88 @@ class DokumenPengeluaransTable
 
                         $record->update(['status' => DokumenPengeluaran::STATUS_DIKEMBALIKAN]);
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Dokumen Dikembalikan')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' dikembalikan untuk direvisi. Alasan: ' . ($data['catatan'] ?? '-'))
+                            ->body('Dokumen '.$record->kode_dokumen.' dikembalikan dari status '.strtoupper($previousStatus).' untuk direvisi. Alasan: '.($data['catatan'] ?? '-'))
                             ->danger()
                             ->sendToDatabase($record->pptk);
+                    }),
+
+                // === AKSI MUNDURKAN TAHAP SEBELUMNYA ===
+                Action::make('kembalikan_tahap')
+                    ->label('Mundurkan Tahap')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('warning')
+                    ->iconButton()
+                    ->tooltip('Mundurkan 1 Tahap Status Sebelumnya')
+                    ->modalHeading('Mundurkan Status Dokumen ke Tahap Sebelumnya')
+                    ->modalDescription(fn (DokumenPengeluaran $record) => 'Status dokumen '.$record->kode_dokumen.' akan dikembalikan 1 tahap ke belakang.')
+                    ->modalSubmitActionLabel('Ya, Mundurkan Status')
+                    ->visible(function (DokumenPengeluaran $record): bool {
+                        $user = auth()->user();
+                        if (! $user) {
+                            return false;
+                        }
+
+                        if ($user->hasAnyRole(['super_admin', 'admin'])) {
+                            return in_array($record->status, [
+                                DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                                DokumenPengeluaran::STATUS_DISAHKAN,
+                                DokumenPengeluaran::STATUS_DIBAYAR,
+                                DokumenPengeluaran::STATUS_DIARSIPKAN,
+                            ]);
+                        }
+
+                        if ($user->hasRole('verifikator') && $record->status === DokumenPengeluaran::STATUS_DIVERIFIKASI) {
+                            return true;
+                        }
+
+                        if ($user->hasRole('ppk') && $record->status === DokumenPengeluaran::STATUS_DISAHKAN) {
+                            return true;
+                        }
+
+                        if ($user->hasRole('bendahara') && in_array($record->status, [
+                            DokumenPengeluaran::STATUS_DIBAYAR,
+                            DokumenPengeluaran::STATUS_DIARSIPKAN,
+                        ])) {
+                            return true;
+                        }
+
+                        return false;
+                    })
+                    ->form([
+                        Textarea::make('alasan')
+                            ->label('Alasan Perubahan Status ke Belakang')
+                            ->placeholder('Jelaskan alasan pembatalan / pengembalian tahap ini...')
+                            ->required(),
+                    ])
+                    ->action(function (DokumenPengeluaran $record, array $data) {
+                        $previousMap = [
+                            DokumenPengeluaran::STATUS_DIVERIFIKASI => DokumenPengeluaran::STATUS_DIAJUKAN,
+                            DokumenPengeluaran::STATUS_DISAHKAN => DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                            DokumenPengeluaran::STATUS_DIBAYAR => DokumenPengeluaran::STATUS_DISAHKAN,
+                            DokumenPengeluaran::STATUS_DIARSIPKAN => DokumenPengeluaran::STATUS_DIBAYAR,
+                        ];
+
+                        $targetStatus = $previousMap[$record->status] ?? null;
+                        if (! $targetStatus) {
+                            return;
+                        }
+
+                        $oldStatus = $record->status;
+                        $record->update(['status' => $targetStatus]);
+
+                        Notification::make()
+                            ->title('Status Dokumen Dimundurkan')
+                            ->body('Status dokumen '.$record->kode_dokumen.' diubah dari '.strtoupper($oldStatus).' kembali menjadi '.strtoupper($targetStatus).'. Alasan: '.$data['alasan'])
+                            ->warning()
+                            ->sendToDatabase($record->pptk);
+
+                        Notification::make()
+                            ->title('Status Berhasil Dimundurkan')
+                            ->body('Dokumen '.$record->kode_dokumen.' kini berstatus '.strtoupper($targetStatus).'.')
+                            ->success()
+                            ->send();
                     }),
 
                 // === AKSI PENGESAHAN (PPK) ===
@@ -243,10 +410,10 @@ class DokumenPengeluaransTable
                     ->color('success')
                     ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('ppk') && $record->status === DokumenPengeluaran::STATUS_DIVERIFIKASI)
                     ->form([
-                        \Filament\Forms\Components\Textarea::make('catatan'),
+                        Textarea::make('catatan'),
                     ])
                     ->action(function (DokumenPengeluaran $record, array $data) {
-                        \App\Models\Pengesahan::create([
+                        Pengesahan::create([
                             'dokumen_id' => $record->id,
                             'ppk_id' => auth()->id(),
                             'tanggal_sah' => now(),
@@ -255,18 +422,18 @@ class DokumenPengeluaransTable
 
                         $record->update(['status' => DokumenPengeluaran::STATUS_DISAHKAN]);
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Dokumen Telah Disahkan')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah disahkan oleh PPK.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah disahkan oleh PPK.')
                             ->success()
                             ->sendToDatabase($record->pptk);
 
                         // Notifikasi ke Bendahara
-                        $bendaharaUsers = \App\Models\User::role('bendahara')->get();
+                        $bendaharaUsers = User::role('bendahara')->get();
                         if ($bendaharaUsers->isNotEmpty()) {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Dokumen Menunggu Pembayaran')
-                                ->body('Dokumen ' . $record->kode_dokumen . ' telah disahkan dan menunggu proses pembayaran.')
+                                ->body('Dokumen '.$record->kode_dokumen.' telah disahkan dan menunggu proses pembayaran.')
                                 ->info()
                                 ->sendToDatabase($bendaharaUsers);
                         }
@@ -283,12 +450,12 @@ class DokumenPengeluaransTable
                     ->modalSubmitActionLabel('Kirim')
                     ->visible(fn (DokumenPengeluaran $record) => auth()->user()->hasRole('bendahara') && $record->status === DokumenPengeluaran::STATUS_DISAHKAN)
                     ->form([
-                        \Filament\Forms\Components\TextInput::make('nomor_spj')
+                        TextInput::make('nomor_spj')
                             ->label('No. BKU')
                             ->required(),
                     ])
                     ->action(function (DokumenPengeluaran $record, array $data) {
-                        \App\Models\Pembayaran::create([
+                        Pembayaran::create([
                             'dokumen_id' => $record->id,
                             'bendahara_id' => auth()->id(),
                             'tanggal_bayar' => now(),
@@ -298,9 +465,9 @@ class DokumenPengeluaransTable
 
                         $record->update(['status' => DokumenPengeluaran::STATUS_DIBAYAR]);
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Dana Telah Dicairkan')
-                            ->body('Dana untuk Dokumen ' . $record->kode_dokumen . ' telah dicairkan (No. BKU: ' . $data['nomor_spj'] . ').')
+                            ->body('Dana untuk Dokumen '.$record->kode_dokumen.' telah dicairkan (No. BKU: '.$data['nomor_spj'].').')
                             ->success()
                             ->sendToDatabase($record->pptk);
                     }),
@@ -317,9 +484,9 @@ class DokumenPengeluaransTable
                     ->action(function (DokumenPengeluaran $record) {
                         $record->update(['status' => DokumenPengeluaran::STATUS_DIARSIPKAN]);
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Dokumen Diarsipkan')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah diarsipkan.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah diarsipkan.')
                             ->success()
                             ->sendToDatabase($record->pptk);
                     }),
@@ -349,9 +516,9 @@ class DokumenPengeluaransTable
             $tipeSumber = is_array($item) ? ($item['tipe_sumber'] ?? null) : null;
             $linkDrive = is_array($item) ? ($item['link_drive'] ?? $item['link'] ?? null) : null;
             $filePath = is_array($item) ? ($item['file'] ?? null) : (string) $item;
-            $judul = (is_array($item) && !empty($item['judul'])) ? $item['judul'] : ('Dokumen ' . ($index + 1));
+            $judul = (is_array($item) && ! empty($item['judul'])) ? $item['judul'] : ('Dokumen '.($index + 1));
 
-            $isDriveLink = ($tipeSumber === 'link') || filled($linkDrive) || str_starts_with((string)$filePath, 'http://') || str_starts_with((string)$filePath, 'https://');
+            $isDriveLink = ($tipeSumber === 'link') || filled($linkDrive) || str_starts_with((string) $filePath, 'http://') || str_starts_with((string) $filePath, 'https://');
 
             if ($isDriveLink) {
                 $url = $linkDrive ?: $filePath;
@@ -366,7 +533,7 @@ class DokumenPengeluaransTable
                 if (empty($filePath)) {
                     continue;
                 }
-                $url = asset('storage/' . $filePath);
+                $url = asset('storage/'.$filePath);
                 $formatBadge = '<span style="display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: 700; color: #b91c1c; background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 4px;">PDF</span>';
                 $btnLabel = 'Buka PDF';
                 $btnStyle = 'color: #2563eb; background-color: #eff6ff; border: 1px solid #bfdbfe;';
@@ -374,30 +541,30 @@ class DokumenPengeluaransTable
             }
 
             $rows[] = '<tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 12px 16px; text-align: center; font-size: 13px; color: #4b5563;">' . ($index + 1) . '</td>
-                <td style="padding: 12px 16px; font-size: 13px; font-weight: 500; color: #111827;">' . e($judul) . '</td>
-                <td style="padding: 12px 16px; text-align: center;">' . $formatBadge . '</td>
+                <td style="padding: 12px 16px; text-align: center; font-size: 13px; color: #4b5563;">'.($index + 1).'</td>
+                <td style="padding: 12px 16px; font-size: 13px; font-weight: 500; color: #111827;">'.e($judul).'</td>
+                <td style="padding: 12px 16px; text-align: center;">'.$formatBadge.'</td>
                 <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
-                    <a href="' . e($url) . '" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; ' . $btnStyle . ' border-radius: 6px; text-decoration: none;">' .
-                        $iconSvg .
-                        '<span style="margin-left: 3px;">' . e($btnLabel) . '</span>' .
-                    '</a>' .
-                '</td>' .
+                    <a href="'.e($url).'" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; '.$btnStyle.' border-radius: 6px; text-decoration: none;">'.
+                        $iconSvg.
+                        '<span style="margin-left: 3px;">'.e($btnLabel).'</span>'.
+                    '</a>'.
+                '</td>'.
             '</tr>';
         }
 
-        return new HtmlString('<div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">' .
-            '<table style="width: 100%; border-collapse: collapse; text-align: left;">' .
-                '<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">' .
-                    '<tr>' .
-                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 60px; text-align: center;">No</th>' .
-                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em;">Judul / Nama Dokumen</th>' .
-                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 100px; text-align: center;">Format</th>' .
-                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 140px; text-align: center;">Aksi</th>' .
-                    '</tr>' .
-                '</thead>' .
-                '<tbody>' . implode('', $rows) . '</tbody>' .
-            '</table>' .
+        return new HtmlString('<div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);">'.
+            '<table style="width: 100%; border-collapse: collapse; text-align: left;">'.
+                '<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">'.
+                    '<tr>'.
+                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 60px; text-align: center;">No</th>'.
+                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em;">Judul / Nama Dokumen</th>'.
+                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 100px; text-align: center;">Format</th>'.
+                        '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 140px; text-align: center;">Aksi</th>'.
+                    '</tr>'.
+                '</thead>'.
+                '<tbody>'.implode('', $rows).'</tbody>'.
+            '</table>'.
         '</div>');
     }
 }

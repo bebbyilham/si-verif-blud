@@ -2,10 +2,9 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Forms\Components\DatePicker;
+use App\Filament\Widgets\WelcomeWidget;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 
@@ -16,7 +15,7 @@ class Dashboard extends BaseDashboard
     public function mount(): void
     {
         if (empty($this->filters['period'])) {
-            $this->setPeriodPreset('7D');
+            $this->setPeriodPreset('all');
         }
     }
 
@@ -59,7 +58,7 @@ class Dashboard extends BaseDashboard
     public function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Widgets\WelcomeWidget::class,
+            WelcomeWidget::class,
         ];
     }
 

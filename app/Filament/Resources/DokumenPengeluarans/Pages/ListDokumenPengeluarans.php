@@ -6,6 +6,8 @@ use App\Filament\Resources\DokumenPengeluarans\DokumenPengeluaranResource;
 use App\Models\DokumenPengeluaran;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListDokumenPengeluarans extends ListRecords
 {
@@ -15,7 +17,8 @@ class ListDokumenPengeluarans extends ListRecords
     {
         return [
             CreateAction::make()
-                ->visible(fn () => auth()->user()->hasRole('pptk')),
+                ->label('Ajukan / Buat Dokumen')
+                ->visible(fn () => auth()->user()->hasAnyRole(['pptk', 'super_admin', 'admin'])),
         ];
     }
 
@@ -42,34 +45,43 @@ class ListDokumenPengeluarans extends ListRecords
     {
         $baseQuery = fn () => DokumenPengeluaranResource::getEloquentQuery();
 
-        return [
-            'semua' => \Filament\Schemas\Components\Tabs\Tab::make('Semua')
+        $tabs = [
+            'semua' => Tab::make('Semua')
                 ->badge($baseQuery()->count()),
-            'diajukan' => \Filament\Schemas\Components\Tabs\Tab::make('Diajukan')
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIAJUKAN))
+        ];
+
+        if (auth()->user()?->hasAnyRole(['pptk', 'admin', 'super_admin'])) {
+            $tabs['draft'] = Tab::make('Draft')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DRAFT))
+                ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DRAFT)->count())
+                ->badgeColor('gray');
+        }
+
+        return array_merge($tabs, [
+            'diajukan' => Tab::make('Diajukan')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIAJUKAN))
                 ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DIAJUKAN)->count())
                 ->badgeColor('warning'),
-            'dikembalikan' => \Filament\Schemas\Components\Tabs\Tab::make('Dikembalikan')
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIKEMBALIKAN))
+            'dikembalikan' => Tab::make('Dikembalikan')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIKEMBALIKAN))
                 ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DIKEMBALIKAN)->count())
                 ->badgeColor('danger'),
-            'diverifikasi' => \Filament\Schemas\Components\Tabs\Tab::make('Diverifikasi')
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIVERIFIKASI))
+            'diverifikasi' => Tab::make('Diverifikasi')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIVERIFIKASI))
                 ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DIVERIFIKASI)->count())
                 ->badgeColor('info'),
-            'disahkan' => \Filament\Schemas\Components\Tabs\Tab::make('Disahkan')
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DISAHKAN))
+            'disahkan' => Tab::make('Disahkan')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DISAHKAN))
                 ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DISAHKAN)->count())
                 ->badgeColor('success'),
-            'dibayar' => \Filament\Schemas\Components\Tabs\Tab::make('Dibayar')
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIBAYAR))
+            'dibayar' => Tab::make('Dibayar')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIBAYAR))
                 ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DIBAYAR)->count())
                 ->badgeColor('success'),
-            'diarsipkan' => \Filament\Schemas\Components\Tabs\Tab::make('Diarsipkan')
-                ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIARSIPKAN))
+            'diarsipkan' => Tab::make('Diarsipkan')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', DokumenPengeluaran::STATUS_DIARSIPKAN))
                 ->badge($baseQuery()->where('status', DokumenPengeluaran::STATUS_DIARSIPKAN)->count())
                 ->badgeColor('gray'),
-        ];
+        ]);
     }
 }
-

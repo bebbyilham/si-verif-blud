@@ -32,10 +32,51 @@ class ViewDokumenPengeluaran extends ViewRecord
                 ->label('Lampiran')
                 ->icon('heroicon-o-paper-clip')
                 ->color('info')
-                ->modalHeading(fn () => 'Daftar Dokumen Lampiran - ' . $this->getRecord()->kode_dokumen)
+                ->modalHeading(fn () => 'Daftar Dokumen Lampiran - '.$this->getRecord()->kode_dokumen)
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Tutup')
                 ->modalContent(fn () => DokumenPengeluaransTable::renderLampiranModal($this->getRecord())),
+
+            // === AKSI PPTK / ADMIN: AJUKAN DOKUMEN DRAFT ===
+            Action::make('ajukan_draft')
+                ->label('Ajukan ke Verifikator')
+                ->icon('heroicon-o-paper-airplane')
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading('Ajukan Dokumen Draft ke Verifikator')
+                ->modalDescription('Pastikan seluruh data dan dokumen lampiran telah lengkap. Setelah diajukan, dokumen akan masuk ke antrean Verifikator.')
+                ->modalSubmitActionLabel('Ya, Ajukan Sekarang')
+                ->visible(fn () => auth()->user()?->hasAnyRole(['pptk', 'super_admin', 'admin']) && $this->getRecord()->status === DokumenPengeluaran::STATUS_DRAFT)
+                ->action(function () {
+                    $record = $this->getRecord();
+
+                    if (! $record->hasValidLampiran()) {
+                        Notification::make()
+                            ->title('Lampiran Belum Lengkap')
+                            ->body('Silakan klik tombol Ubah dan unggah minimal 1 file PDF atau tautan Google Drive sebelum mengajukan dokumen.')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $record->update(['status' => DokumenPengeluaran::STATUS_DIAJUKAN]);
+
+                    $verifikators = User::role('verifikator')->get();
+                    if ($verifikators->isNotEmpty()) {
+                        Notification::make()
+                            ->title('Dokumen Baru Diajukan')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah diajukan oleh PPTK ('.auth()->user()->name.') dan menunggu verifikasi.')
+                            ->success()
+                            ->sendToDatabase($verifikators);
+                    }
+
+                    Notification::make()
+                        ->title('Dokumen Berhasil Diajukan')
+                        ->body('Dokumen '.$record->kode_dokumen.' telah dikirimkan ke Verifikator.')
+                        ->success()
+                        ->send();
+                }),
 
             // === AKSI PPTK: AJUKAN ULANG DOKUMEN REVISI ===
             Action::make('kirim_ulang')
@@ -60,14 +101,14 @@ class ViewDokumenPengeluaran extends ViewRecord
                     if ($verifikators->isNotEmpty()) {
                         Notification::make()
                             ->title('Dokumen Diajukan Ulang')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah diperbaiki oleh PPTK (' . auth()->user()->name . ') dan diajukan ulang untuk verifikasi.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah diperbaiki oleh PPTK ('.auth()->user()->name.') dan diajukan ulang untuk verifikasi.')
                             ->info()
                             ->sendToDatabase($verifikators);
                     }
 
                     Notification::make()
                         ->title('Dokumen Berhasil Diajukan Ulang')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' telah dikirimkan ke Verifikator untuk diperiksa kembali.')
+                        ->body('Dokumen '.$record->kode_dokumen.' telah dikirimkan ke Verifikator untuk diperiksa kembali.')
                         ->success()
                         ->send();
                 }),
@@ -101,7 +142,7 @@ class ViewDokumenPengeluaran extends ViewRecord
 
                     Notification::make()
                         ->title('Dokumen Diverifikasi')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' telah lolos verifikasi dan menunggu pengesahan PPK.')
+                        ->body('Dokumen '.$record->kode_dokumen.' telah lolos verifikasi dan menunggu pengesahan PPK.')
                         ->success()
                         ->sendToDatabase($record->pptk);
 
@@ -109,19 +150,19 @@ class ViewDokumenPengeluaran extends ViewRecord
                     if ($ppkUsers->isNotEmpty()) {
                         Notification::make()
                             ->title('Dokumen Menunggu Pengesahan')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah diverifikasi dan menunggu pengesahan Anda.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah diverifikasi dan menunggu pengesahan Anda.')
                             ->info()
                             ->sendToDatabase($ppkUsers);
                     }
 
                     Notification::make()
                         ->title('Berhasil Diverifikasi')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' berhasil diverifikasi.')
+                        ->body('Dokumen '.$record->kode_dokumen.' berhasil diverifikasi.')
                         ->success()
                         ->send();
                 }),
 
-            // === AKSI VERIFIKATOR: KEMBALIKAN / REVISI ===
+            // === AKSI KEMBALIKAN / REVISI KE PPTK ===
             Action::make('verifikasi_kembalikan')
                 ->label('Kembalikan (Revisi)')
                 ->icon('heroicon-o-x-circle')
@@ -129,7 +170,42 @@ class ViewDokumenPengeluaran extends ViewRecord
                 ->modalHeading('Kembalikan Dokumen ke PPTK (Revisi)')
                 ->modalDescription('Dokumen akan dikembalikan ke PPTK beserta catatan jenis kesalahan untuk diperbaiki.')
                 ->modalSubmitActionLabel('Kembalikan Dokumen')
-                ->visible(fn () => auth()->user()?->hasRole('verifikator') && in_array($this->getRecord()->status, [DokumenPengeluaran::STATUS_DIAJUKAN, DokumenPengeluaran::STATUS_DIKEMBALIKAN]))
+                ->visible(function (): bool {
+                    $user = auth()->user();
+                    $record = $this->getRecord();
+                    if (! $user || ! $record) {
+                        return false;
+                    }
+
+                    if ($user->hasAnyRole(['super_admin', 'admin'])) {
+                        return in_array($record->status, [
+                            DokumenPengeluaran::STATUS_DIAJUKAN,
+                            DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                            DokumenPengeluaran::STATUS_DISAHKAN,
+                            DokumenPengeluaran::STATUS_DIBAYAR,
+                        ]);
+                    }
+
+                    if ($user->hasRole('verifikator') && in_array($record->status, [
+                        DokumenPengeluaran::STATUS_DIAJUKAN,
+                        DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                    ])) {
+                        return true;
+                    }
+
+                    if ($user->hasRole('ppk') && in_array($record->status, [
+                        DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                        DokumenPengeluaran::STATUS_DISAHKAN,
+                    ])) {
+                        return true;
+                    }
+
+                    if ($user->hasRole('bendahara') && $record->status === DokumenPengeluaran::STATUS_DISAHKAN) {
+                        return true;
+                    }
+
+                    return false;
+                })
                 ->form([
                     Select::make('jenis_kesalahan_id')
                         ->label('Kategori Jenis Kesalahan')
@@ -143,6 +219,7 @@ class ViewDokumenPengeluaran extends ViewRecord
                 ])
                 ->action(function (array $data) {
                     $record = $this->getRecord();
+                    $previousStatus = $record->status;
 
                     Verifikasi::create([
                         'dokumen_id' => $record->id,
@@ -165,7 +242,7 @@ class ViewDokumenPengeluaran extends ViewRecord
 
                     Notification::make()
                         ->title('Dokumen Dikembalikan')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' dikembalikan untuk direvisi. Alasan: ' . ($data['catatan'] ?? '-'))
+                        ->body('Dokumen '.$record->kode_dokumen.' dikembalikan dari status '.strtoupper($previousStatus).' untuk direvisi. Alasan: '.($data['catatan'] ?? '-'))
                         ->danger()
                         ->sendToDatabase($record->pptk);
 
@@ -173,6 +250,83 @@ class ViewDokumenPengeluaran extends ViewRecord
                         ->title('Dokumen Dikembalikan ke PPTK')
                         ->body('Catatan revisi telah dikirimkan ke PPTK.')
                         ->warning()
+                        ->send();
+                }),
+
+            // === AKSI MUNDURKAN TAHAP SEBELUMNYA ===
+            Action::make('kembalikan_tahap')
+                ->label('Mundurkan Tahap')
+                ->icon('heroicon-o-arrow-uturn-left')
+                ->color('warning')
+                ->modalHeading('Mundurkan Status Dokumen ke Tahap Sebelumnya')
+                ->modalDescription(fn () => 'Status dokumen '.$this->getRecord()->kode_dokumen.' akan dikembalikan 1 tahap ke belakang.')
+                ->modalSubmitActionLabel('Ya, Mundurkan Status')
+                ->visible(function (): bool {
+                    $user = auth()->user();
+                    $record = $this->getRecord();
+                    if (! $user || ! $record) {
+                        return false;
+                    }
+
+                    if ($user->hasAnyRole(['super_admin', 'admin'])) {
+                        return in_array($record->status, [
+                            DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                            DokumenPengeluaran::STATUS_DISAHKAN,
+                            DokumenPengeluaran::STATUS_DIBAYAR,
+                            DokumenPengeluaran::STATUS_DIARSIPKAN,
+                        ]);
+                    }
+
+                    if ($user->hasRole('verifikator') && $record->status === DokumenPengeluaran::STATUS_DIVERIFIKASI) {
+                        return true;
+                    }
+
+                    if ($user->hasRole('ppk') && $record->status === DokumenPengeluaran::STATUS_DISAHKAN) {
+                        return true;
+                    }
+
+                    if ($user->hasRole('bendahara') && in_array($record->status, [
+                        DokumenPengeluaran::STATUS_DIBAYAR,
+                        DokumenPengeluaran::STATUS_DIARSIPKAN,
+                    ])) {
+                        return true;
+                    }
+
+                    return false;
+                })
+                ->form([
+                    Textarea::make('alasan')
+                        ->label('Alasan Perubahan Status ke Belakang')
+                        ->placeholder('Jelaskan alasan pembatalan / pengembalian tahap ini...')
+                        ->required(),
+                ])
+                ->action(function (array $data) {
+                    $record = $this->getRecord();
+                    $previousMap = [
+                        DokumenPengeluaran::STATUS_DIVERIFIKASI => DokumenPengeluaran::STATUS_DIAJUKAN,
+                        DokumenPengeluaran::STATUS_DISAHKAN => DokumenPengeluaran::STATUS_DIVERIFIKASI,
+                        DokumenPengeluaran::STATUS_DIBAYAR => DokumenPengeluaran::STATUS_DISAHKAN,
+                        DokumenPengeluaran::STATUS_DIARSIPKAN => DokumenPengeluaran::STATUS_DIBAYAR,
+                    ];
+
+                    $targetStatus = $previousMap[$record->status] ?? null;
+                    if (! $targetStatus) {
+                        return;
+                    }
+
+                    $oldStatus = $record->status;
+                    $record->update(['status' => $targetStatus]);
+
+                    Notification::make()
+                        ->title('Status Dokumen Dimundurkan')
+                        ->body('Status dokumen '.$record->kode_dokumen.' diubah dari '.strtoupper($oldStatus).' kembali menjadi '.strtoupper($targetStatus).'. Alasan: '.$data['alasan'])
+                        ->warning()
+                        ->sendToDatabase($record->pptk);
+
+                    Notification::make()
+                        ->title('Status Berhasil Dimundurkan')
+                        ->body('Dokumen '.$record->kode_dokumen.' kini berstatus '.strtoupper($targetStatus).'.')
+                        ->success()
                         ->send();
                 }),
 
@@ -205,7 +359,7 @@ class ViewDokumenPengeluaran extends ViewRecord
 
                     Notification::make()
                         ->title('Dokumen Telah Disahkan')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' telah disahkan oleh PPK.')
+                        ->body('Dokumen '.$record->kode_dokumen.' telah disahkan oleh PPK.')
                         ->success()
                         ->sendToDatabase($record->pptk);
 
@@ -213,14 +367,14 @@ class ViewDokumenPengeluaran extends ViewRecord
                     if ($bendaharaUsers->isNotEmpty()) {
                         Notification::make()
                             ->title('Dokumen Menunggu Pembayaran')
-                            ->body('Dokumen ' . $record->kode_dokumen . ' telah disahkan dan menunggu proses pembayaran.')
+                            ->body('Dokumen '.$record->kode_dokumen.' telah disahkan dan menunggu proses pembayaran.')
                             ->info()
                             ->sendToDatabase($bendaharaUsers);
                     }
 
                     Notification::make()
                         ->title('Dokumen Berhasil Disahkan')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' telah disahkan dan diteruskan ke Bendahara.')
+                        ->body('Dokumen '.$record->kode_dokumen.' telah disahkan dan diteruskan ke Bendahara.')
                         ->success()
                         ->send();
                 }),
@@ -255,7 +409,7 @@ class ViewDokumenPengeluaran extends ViewRecord
 
                     Notification::make()
                         ->title('Dana Telah Dicairkan')
-                        ->body('Dana untuk Dokumen ' . $record->kode_dokumen . ' telah dicairkan (No. BKU: ' . $data['nomor_spj'] . ').')
+                        ->body('Dana untuk Dokumen '.$record->kode_dokumen.' telah dicairkan (No. BKU: '.$data['nomor_spj'].').')
                         ->success()
                         ->sendToDatabase($record->pptk);
 
@@ -282,7 +436,7 @@ class ViewDokumenPengeluaran extends ViewRecord
 
                     Notification::make()
                         ->title('Dokumen Diarsipkan')
-                        ->body('Dokumen ' . $record->kode_dokumen . ' telah diarsipkan.')
+                        ->body('Dokumen '.$record->kode_dokumen.' telah diarsipkan.')
                         ->success()
                         ->sendToDatabase($record->pptk);
 
@@ -296,12 +450,20 @@ class ViewDokumenPengeluaran extends ViewRecord
             // === EDIT / UBAH ===
             EditAction::make()
                 ->label('Ubah')
-                ->visible(fn () => (auth()->user()?->hasRole('pptk') && in_array($this->getRecord()->status, [DokumenPengeluaran::STATUS_DIAJUKAN, DokumenPengeluaran::STATUS_DIKEMBALIKAN])) || auth()->user()?->hasRole('super_admin')),
+                ->visible(fn () => (auth()->user()?->hasRole('pptk') && in_array($this->getRecord()->status, [
+                    DokumenPengeluaran::STATUS_DRAFT,
+                    DokumenPengeluaran::STATUS_DIAJUKAN,
+                    DokumenPengeluaran::STATUS_DIKEMBALIKAN,
+                ])) || auth()->user()?->hasAnyRole(['super_admin', 'admin'])),
 
             // === HAPUS ===
             DeleteAction::make()
                 ->label('Hapus')
-                ->visible(fn () => auth()->user()?->hasRole('super_admin') || (auth()->user()?->hasRole('pptk') && in_array($this->getRecord()->status, [DokumenPengeluaran::STATUS_DIAJUKAN, DokumenPengeluaran::STATUS_DIKEMBALIKAN]))),
+                ->visible(fn () => auth()->user()?->hasAnyRole(['super_admin', 'admin']) || (auth()->user()?->hasRole('pptk') && in_array($this->getRecord()->status, [
+                    DokumenPengeluaran::STATUS_DRAFT,
+                    DokumenPengeluaran::STATUS_DIAJUKAN,
+                    DokumenPengeluaran::STATUS_DIKEMBALIKAN,
+                ]))),
         ];
     }
 }

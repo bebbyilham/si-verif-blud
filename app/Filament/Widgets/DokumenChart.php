@@ -3,6 +3,8 @@
 namespace App\Filament\Widgets;
 
 use App\Models\DokumenPengeluaran;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
@@ -11,7 +13,18 @@ class DokumenChart extends ChartWidget
     use InteractsWithPageFilters;
 
     protected ?string $heading = 'Pengajuan Dokumen';
+
     protected static ?int $sort = 3;
+
+    public function getHeading(): ?string
+    {
+        $user = auth()->user();
+        if ($user && $user->hasRole('pptk') && $user->bidang) {
+            return 'Pengajuan Dokumen Bidang '.$user->bidang->nama_bidang;
+        }
+
+        return $this->heading;
+    }
 
     public static function canView(): bool
     {
@@ -23,34 +36,55 @@ class DokumenChart extends ChartWidget
         $days = [];
         $counts = [];
 
+        $user = auth()->user();
+        $baseQuery = DokumenPengeluaran::query()
+            ->where('status', '!=', DokumenPengeluaran::STATUS_DRAFT);
+
+        if ($user && $user->hasRole('pptk')) {
+            $baseQuery->where('pptk_id', $user->id);
+        }
+
         $startDate = $this->filters['startDate'] ?? null;
         $endDate = $this->filters['endDate'] ?? null;
 
-        $start = $startDate ? \Carbon\Carbon::parse($startDate) : now()->subDays(6);
-        $end = $endDate ? \Carbon\Carbon::parse($endDate) : now();
+        if ($startDate) {
+            $start = Carbon::parse($startDate);
+        } else {
+            $minDate = (clone $baseQuery)->min('tanggal_ajuan');
+            $parsedMin = $minDate ? Carbon::parse($minDate) : now()->subDays(6);
+            $start = $parsedMin->lt(now()->subDays(6)) ? $parsedMin : now()->subDays(6);
+        }
+
+        $end = $endDate ? Carbon::parse($endDate) : now();
+        if ($start->gt($end)) {
+            $start = $end->copy()->subDays(6);
+        }
 
         $diffInDays = $start->diffInDays($end);
 
         if ($diffInDays > 90) {
-            $period = \Carbon\CarbonPeriod::create($start->copy()->startOfMonth(), '1 month', $end->copy()->endOfMonth());
+            $period = CarbonPeriod::create($start->copy()->startOfMonth(), '1 month', $end->copy()->endOfMonth());
             foreach ($period as $date) {
                 $days[] = $date->format('M Y');
-                $counts[] = DokumenPengeluaran::whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
+                $counts[] = (clone $baseQuery)
+                    ->whereYear('tanggal_ajuan', $date->year)
+                    ->whereMonth('tanggal_ajuan', $date->month)
                     ->count();
             }
         } else {
-            $period = \Carbon\CarbonPeriod::create($start, $end);
+            $period = CarbonPeriod::create($start, $end);
             foreach ($period as $date) {
                 $days[] = $date->format('d M');
-                $counts[] = DokumenPengeluaran::whereDate('created_at', $date->toDateString())->count();
+                $counts[] = (clone $baseQuery)
+                    ->whereDate('tanggal_ajuan', $date->toDateString())
+                    ->count();
             }
         }
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Total Dokumen Baru',
+                    'label' => $user && $user->hasRole('pptk') ? 'Dokumen Saya' : 'Total Dokumen Diajukan',
                     'data' => $counts,
                     'borderColor' => '#6366f1',
                     'fill' => true,

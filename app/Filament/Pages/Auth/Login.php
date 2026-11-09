@@ -7,12 +7,13 @@ use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
+use Illuminate\Contracts\Support\Htmlable;
 
 class Login extends BaseLogin
 {
     protected string $view = 'filament.pages.auth.login';
 
-    public function getTitle(): string | \Illuminate\Contracts\Support\Htmlable
+    public function getTitle(): string|Htmlable
     {
         return 'SI-VERIF BLUD - Sistem Verifikasi Dokumen Pengeluaran';
     }
@@ -47,6 +48,7 @@ class Login extends BaseLogin
     public function getRecentDocuments()
     {
         return DokumenPengeluaran::with('bidang')
+            ->where('status', '!=', DokumenPengeluaran::STATUS_DRAFT)
             ->latest('tanggal_ajuan')
             ->latest('id')
             ->take(3)
@@ -55,7 +57,7 @@ class Login extends BaseLogin
 
     public function getStatsData(): array
     {
-        $total = DokumenPengeluaran::count();
+        $total = DokumenPengeluaran::where('status', '!=', DokumenPengeluaran::STATUS_DRAFT)->count();
         $verified = DokumenPengeluaran::whereIn('status', [
             DokumenPengeluaran::STATUS_DIVERIFIKASI,
             DokumenPengeluaran::STATUS_DISAHKAN,
@@ -67,7 +69,7 @@ class Login extends BaseLogin
 
         return [
             'total' => $total,
-            'rate' => $percentage . '%',
+            'rate' => $percentage.'%',
         ];
     }
 }

@@ -2,13 +2,18 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\DokumenPengeluaran;
 use App\Models\Verifikasi;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class WaktuVerifikasiChart extends ChartWidget
 {
+    use InteractsWithPageFilters;
+
     protected ?string $heading = 'Rata-Rata Waktu Verifikasi (Hari)';
+
     protected static ?int $sort = 5;
 
     public static function canView(): bool
@@ -21,8 +26,25 @@ class WaktuVerifikasiChart extends ChartWidget
         $days = [];
         $averages = [];
 
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i);
+        $startDate = $this->filters['startDate'] ?? null;
+        $endDate = $this->filters['endDate'] ?? null;
+
+        if ($startDate) {
+            $start = Carbon::parse($startDate);
+        } else {
+            $minDate = Verifikasi::min('tanggal_verifikasi');
+            $parsedMin = $minDate ? Carbon::parse($minDate)->startOfDay() : now()->subDays(6);
+            $start = $parsedMin->lt(now()->subDays(6)) ? $parsedMin : now()->subDays(6);
+        }
+
+        $end = $endDate ? Carbon::parse($endDate) : now();
+        if ($start->gt($end)) {
+            $start = $end->copy()->subDays(6);
+        }
+
+        $period = CarbonPeriod::create($start, $end);
+
+        foreach ($period as $date) {
             $days[] = $date->format('d M');
 
             // Hitung rata-rata waktu antara tanggal_ajuan dan tanggal_verifikasi
@@ -37,9 +59,9 @@ class WaktuVerifikasiChart extends ChartWidget
                 $count = 0;
                 foreach ($verifikasis as $v) {
                     if ($v->dokumenPengeluaran && $v->dokumenPengeluaran->tanggal_ajuan) {
-                        $ajuan = \Carbon\Carbon::parse($v->dokumenPengeluaran->tanggal_ajuan);
-                        $verif = \Carbon\Carbon::parse($v->tanggal_verifikasi);
-                        $totalDays += $ajuan->diffInDays($verif);
+                        $ajuan = Carbon::parse($v->dokumenPengeluaran->tanggal_ajuan)->startOfDay();
+                        $verif = Carbon::parse($v->tanggal_verifikasi)->startOfDay();
+                        $totalDays += abs($verif->diffInDays($ajuan));
                         $count++;
                     }
                 }

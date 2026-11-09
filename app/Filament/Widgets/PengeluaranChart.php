@@ -3,6 +3,8 @@
 namespace App\Filament\Widgets;
 
 use App\Models\DokumenPengeluaran;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
@@ -11,11 +13,12 @@ class PengeluaranChart extends ChartWidget
     use InteractsWithPageFilters;
 
     protected ?string $heading = 'Total Pengeluaran';
+
     protected static ?int $sort = 2;
 
     public static function canView(): bool
     {
-        return auth()->user()->hasAnyRole(['admin', 'super_admin', 'manajemen']);
+        return auth()->user()->hasAnyRole(['admin', 'super_admin', 'manajemen', 'bendahara']);
     }
 
     protected function getData(): array
@@ -23,37 +26,46 @@ class PengeluaranChart extends ChartWidget
         $days = [];
         $sums = [];
 
+        $baseQuery = DokumenPengeluaran::query()
+            ->whereIn('status', [
+                DokumenPengeluaran::STATUS_DISAHKAN,
+                DokumenPengeluaran::STATUS_DIBAYAR,
+                DokumenPengeluaran::STATUS_DIARSIPKAN,
+            ]);
+
         $startDate = $this->filters['startDate'] ?? null;
         $endDate = $this->filters['endDate'] ?? null;
 
-        $start = $startDate ? \Carbon\Carbon::parse($startDate) : now()->subDays(6);
-        $end = $endDate ? \Carbon\Carbon::parse($endDate) : now();
+        if ($startDate) {
+            $start = Carbon::parse($startDate);
+        } else {
+            $minDate = (clone $baseQuery)->min('tanggal_ajuan');
+            $parsedMin = $minDate ? Carbon::parse($minDate) : now()->subDays(6);
+            $start = $parsedMin->lt(now()->subDays(6)) ? $parsedMin : now()->subDays(6);
+        }
+
+        $end = $endDate ? Carbon::parse($endDate) : now();
+        if ($start->gt($end)) {
+            $start = $end->copy()->subDays(6);
+        }
 
         $diffInDays = $start->diffInDays($end);
 
         if ($diffInDays > 90) {
-            $period = \Carbon\CarbonPeriod::create($start->copy()->startOfMonth(), '1 month', $end->copy()->endOfMonth());
+            $period = CarbonPeriod::create($start->copy()->startOfMonth(), '1 month', $end->copy()->endOfMonth());
             foreach ($period as $date) {
                 $days[] = $date->format('M Y');
-                $sums[] = DokumenPengeluaran::whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
-                    ->whereIn('status', [
-                        DokumenPengeluaran::STATUS_DISAHKAN,
-                        DokumenPengeluaran::STATUS_DIBAYAR,
-                        DokumenPengeluaran::STATUS_DIARSIPKAN,
-                    ])
+                $sums[] = (clone $baseQuery)
+                    ->whereYear('tanggal_ajuan', $date->year)
+                    ->whereMonth('tanggal_ajuan', $date->month)
                     ->sum('nominal') / 1000000;
             }
         } else {
-            $period = \Carbon\CarbonPeriod::create($start, $end);
+            $period = CarbonPeriod::create($start, $end);
             foreach ($period as $date) {
                 $days[] = $date->format('d M');
-                $sums[] = DokumenPengeluaran::whereDate('created_at', $date->toDateString())
-                    ->whereIn('status', [
-                        DokumenPengeluaran::STATUS_DISAHKAN,
-                        DokumenPengeluaran::STATUS_DIBAYAR,
-                        DokumenPengeluaran::STATUS_DIARSIPKAN,
-                    ])
+                $sums[] = (clone $baseQuery)
+                    ->whereDate('tanggal_ajuan', $date->toDateString())
                     ->sum('nominal') / 1000000;
             }
         }

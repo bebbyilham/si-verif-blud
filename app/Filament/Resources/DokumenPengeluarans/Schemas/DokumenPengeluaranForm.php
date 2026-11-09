@@ -2,12 +2,18 @@
 
 namespace App\Filament\Resources\DokumenPengeluarans\Schemas;
 
+use App\Models\DokumenPengeluaran;
+use App\Models\JenisDokumen;
+use App\Models\SumberDana;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
 use Illuminate\Support\HtmlString;
@@ -19,6 +25,27 @@ class DokumenPengeluaranForm
         return $schema
             ->columns(2)
             ->components([
+                ToggleButtons::make('status')
+                    ->label('Mode Penyimpanan Dokumen')
+                    ->inline()
+                    ->options([
+                        DokumenPengeluaran::STATUS_DIAJUKAN => 'Ajukan Langsung ke Verifikator',
+                        DokumenPengeluaran::STATUS_DRAFT => 'Simpan sebagai Draft (Belum Diajukan)',
+                    ])
+                    ->icons([
+                        DokumenPengeluaran::STATUS_DIAJUKAN => 'heroicon-o-paper-airplane',
+                        DokumenPengeluaran::STATUS_DRAFT => 'heroicon-o-document-duplicate',
+                    ])
+                    ->colors([
+                        DokumenPengeluaran::STATUS_DIAJUKAN => 'primary',
+                        DokumenPengeluaran::STATUS_DRAFT => 'warning',
+                    ])
+                    ->default(DokumenPengeluaran::STATUS_DIAJUKAN)
+                    ->live()
+                    ->required()
+                    ->visible(fn ($record) => ! $record || in_array($record->status, [DokumenPengeluaran::STATUS_DRAFT, DokumenPengeluaran::STATUS_DIAJUKAN]))
+                    ->helperText('Pilih "Simpan sebagai Draft" jika ingin menyimpan data terlebih dahulu tanpa langsung mengirim ke Verifikator.')
+                    ->columnSpanFull(),
                 TextInput::make('kode_dokumen')
                     ->disabled()
                     ->dehydrated(false)
@@ -31,14 +58,14 @@ class DokumenPengeluaranForm
                     ->disabled(fn () => auth()->user()?->hasRole('pptk') && filled(auth()->user()?->bidang_id))
                     ->dehydrated()
                     ->required(),
-                \Filament\Forms\Components\Hidden::make('pptk_id')
+                Hidden::make('pptk_id')
                     ->default(fn () => auth()->id()),
                 Select::make('jenis_dokumen')
-                    ->options(fn () => \App\Models\JenisDokumen::pluck('nama_jenis', 'kode_jenis')->toArray())
+                    ->options(fn () => JenisDokumen::pluck('nama_jenis', 'kode_jenis')->toArray())
                     ->searchable()
                     ->required(),
                 Select::make('sumber_dana')
-                    ->options(fn () => \App\Models\SumberDana::pluck('nama', 'nama')->toArray())
+                    ->options(fn () => SumberDana::pluck('nama', 'nama')->toArray())
                     ->searchable()
                     ->required(),
                 TextInput::make('nominal')
@@ -64,7 +91,7 @@ class DokumenPengeluaranForm
                             <div style="font-size: 12px; line-height: 1.35;">
                                 <span style="font-weight: 800; color: #b45309; letter-spacing: 0.01em;">NOTED :</span>
                                 <strong style="color: #92400e; font-weight: 700;">Pastikan Kelengkapan Dokumen</strong>
-                                <a href="' . url('/admin/kelengkapan-berkas') . '" target="_blank" style="font-size: 11.5px; color: #b45309; font-weight: 700; text-decoration: underline; display: flex; align-items: center; gap: 4px; margin-top: 1px; transition: color 0.15s;">
+                                <a href="'.url('/admin/kelengkapan-berkas').'" target="_blank" style="font-size: 11.5px; color: #b45309; font-weight: 700; text-decoration: underline; display: flex; align-items: center; gap: 4px; margin-top: 1px; transition: color 0.15s;">
                                     (Cek Kembali Menu Kelengkapan Berkas 
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 12px; height: 12px;">
                                       <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
@@ -73,25 +100,23 @@ class DokumenPengeluaranForm
                             </div>
                         </div>
                     ')),
-                \Filament\Forms\Components\Hidden::make('status')
-                    ->default('diajukan'),
-                \Filament\Forms\Components\Repeater::make('file_path')
+                Repeater::make('file_path')
                     ->label('Dokumen Lampiran')
                     ->schema([
                         Select::make('tipe_sumber')
                             ->label('Sumber Dokumen')
                             ->options([
-                                'upload' => '📄 Unggah File PDF (Maksimal 1MB)',
-                                'link' => '🔗 Tautan Google Drive (Jika File > 1MB)',
+                                'upload' => 'Unggah File PDF (Maksimal 1MB)',
+                                'link' => 'Tautan Google Drive (Jika File > 1MB)',
                             ])
                             ->default('upload')
                             ->live()
-                            ->required()
+                            ->required(fn ($get) => $get('../../status') !== DokumenPengeluaran::STATUS_DRAFT)
                             ->columnSpanFull(),
                         TextInput::make('judul')
                             ->label('Judul / Nama Dokumen')
                             ->placeholder('Contoh: Kwitansi Pembelian, SPJ Obat, Bukti Transfer')
-                            ->required(),
+                            ->required(fn ($get) => $get('../../status') !== DokumenPengeluaran::STATUS_DRAFT || filled($get('file')) || filled($get('link_drive'))),
                         FileUpload::make('file')
                             ->label('File PDF (Maksimal 1MB)')
                             ->disk('public')
@@ -102,20 +127,34 @@ class DokumenPengeluaranForm
                             ->downloadable()
                             ->helperText('Maksimal 1MB. Jika file > 1MB, pilih opsi Google Drive.')
                             ->visible(fn ($get) => $get('tipe_sumber') !== 'link')
-                            ->required(fn ($get) => $get('tipe_sumber') !== 'link'),
+                            ->required(fn ($get) => $get('tipe_sumber') !== 'link' && $get('../../status') !== DokumenPengeluaran::STATUS_DRAFT),
                         TextInput::make('link_drive')
                             ->label('Tautan Google Drive')
                             ->placeholder('https://drive.google.com/file/d/...')
                             ->url()
                             ->helperText('Masukkan URL Google Drive (Akses file: Public / Anyone with link).')
                             ->visible(fn ($get) => $get('tipe_sumber') === 'link')
-                            ->required(fn ($get) => $get('tipe_sumber') === 'link'),
+                            ->required(fn ($get) => $get('tipe_sumber') === 'link' && $get('../../status') !== DokumenPengeluaran::STATUS_DRAFT),
                     ])
                     ->columns(2)
                     ->addActionLabel('Tambah Dokumen Lampiran')
                     ->reorderable()
                     ->collapsible()
                     ->defaultItems(1)
+                    ->minItems(fn ($get) => $get('status') === DokumenPengeluaran::STATUS_DRAFT ? 0 : 1)
+                    ->mutateDehydratedStateUsing(function ($state): array {
+                        if (! is_array($state)) {
+                            return [];
+                        }
+
+                        return array_values(array_filter($state, function ($item) {
+                            if (! is_array($item)) {
+                                return filled($item);
+                            }
+
+                            return filled($item['judul'] ?? null) || filled($item['file'] ?? null) || filled($item['link_drive'] ?? null);
+                        }));
+                    })
                     ->columnSpanFull(),
                 Textarea::make('keterangan')
                     ->columnSpanFull(),

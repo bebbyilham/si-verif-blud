@@ -134,6 +134,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'email' => 'superadmin@blud.com',
+                'password' => Hash::make('12345678'),
                 'role' => 'super_admin',
                 'bidang_id' => null
             ],
@@ -216,11 +217,11 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($usersData as $data) {
-            $user = User::firstOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $data['email']],
                 [
                     'name' => $data['name'],
-                    'password' => $defaultPassword,
+                    'password' => $data['password'] ?? $defaultPassword,
                     'bidang_id' => $data['bidang_id'],
                     'status_aktif' => true,
                 ]

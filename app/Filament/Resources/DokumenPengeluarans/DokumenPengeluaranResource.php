@@ -2,21 +2,25 @@
 
 namespace App\Filament\Resources\DokumenPengeluarans;
 
-use App\Filament\Resources\DokumenPengeluarans\Pages\CreateDokumenPengeluaran;
 use App\Filament\Resources\DokumenPengeluarans\Pages\EditDokumenPengeluaran;
 use App\Filament\Resources\DokumenPengeluarans\Pages\ListDokumenPengeluarans;
+use App\Filament\Resources\DokumenPengeluarans\Pages\ViewDokumenPengeluaran;
+use App\Filament\Resources\DokumenPengeluarans\RelationManagers\PembayaransRelationManager;
+use App\Filament\Resources\DokumenPengeluarans\RelationManagers\PengesahansRelationManager;
+use App\Filament\Resources\DokumenPengeluarans\RelationManagers\RiwayatKoreksisRelationManager;
+use App\Filament\Resources\DokumenPengeluarans\RelationManagers\VerifikasisRelationManager;
 use App\Filament\Resources\DokumenPengeluarans\Schemas\DokumenPengeluaranForm;
 use App\Filament\Resources\DokumenPengeluarans\Tables\DokumenPengeluaransTable;
 use App\Models\DokumenPengeluaran;
 use BackedEnum;
-use Filament\Infolists\Infolist;
+use Carbon\Carbon;
+use Filament\Forms\Components\Placeholder;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\Section;
-use Filament\Infolists\Components\Grid;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 
 class DokumenPengeluaranResource extends Resource
 {
@@ -30,7 +34,7 @@ class DokumenPengeluaranResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()->hasRole('pptk');
+        return auth()->user()->hasAnyRole(['pptk', 'super_admin', 'admin']);
     }
 
     public static function form(Schema $schema): Schema
@@ -51,10 +55,12 @@ class DokumenPengeluaranResource extends Resource
                 \Filament\Schemas\Components\Section::make('Timeline Status Dokumen')
                     ->columnSpanFull()
                     ->schema([
-                        \Filament\Forms\Components\Placeholder::make('timeline_visual')
+                        Placeholder::make('timeline_visual')
                             ->label('')
                             ->content(function ($record) {
-                                if (!$record) return '';
+                                if (! $record) {
+                                    return '';
+                                }
 
                                 $currentStatus = $record->status;
                                 $stages = [
@@ -66,8 +72,10 @@ class DokumenPengeluaranResource extends Resource
                                 ];
 
                                 $isReturned = ($currentStatus === 'dikembalikan');
+                                $isDraft = ($currentStatus === DokumenPengeluaran::STATUS_DRAFT);
 
                                 $statusOrder = [
+                                    'draft' => 0,
                                     'diajukan' => 1,
                                     'dikembalikan' => 1, // at stage 1 waiting for re-submission
                                     'diverifikasi' => 2,
@@ -79,9 +87,14 @@ class DokumenPengeluaranResource extends Resource
                                 $currentStep = $statusOrder[$currentStatus] ?? 1;
 
                                 $html = '<div style="padding: 16px 8px; width: 100%; box-sizing: border-box;">';
+                                if ($isDraft) {
+                                    $html .= '<div style="margin-bottom: 16px; padding: 10px 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; color: #334155; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">'.
+                                        '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>'.
+                                        ' Dokumen saat ini berstatus <strong>DRAFT</strong> (belum diajukan ke Verifikator). Silakan lengkapi lampiran lalu klik tombol <strong>Ajukan ke Verifikator</strong>.</div>';
+                                }
                                 if ($isReturned) {
-                                    $html .= '<div style="margin-bottom: 16px; padding: 10px 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">' .
-                                        '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' .
+                                    $html .= '<div style="margin-bottom: 16px; padding: 10px 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">'.
+                                        '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'.
                                         ' Dokumen saat ini dalam status <strong>DIKEMBALIKAN (REVISI)</strong>. Silakan periksa Riwayat Koreksi di bawah.</div>';
                                 }
 
@@ -93,7 +106,7 @@ class DokumenPengeluaranResource extends Resource
                                     $i++;
                                     $stepNum = $statusOrder[$key];
                                     $isPassed = $currentStep > $stepNum;
-                                    $isCurrent = $currentStep === $stepNum && !$isReturned;
+                                    $isCurrent = $currentStep === $stepNum && ! $isReturned;
                                     $isCurrentReturned = $isReturned && $key === 'diajukan';
 
                                     // Color logic
@@ -115,26 +128,27 @@ class DokumenPengeluaranResource extends Resource
                                     }
 
                                     $html .= '<div style="display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; z-index: 2;">';
-                                    $html .= '<div style="width: 40px; height: 40px; border-radius: 50%; background-color: ' . $circleBg . '; color: ' . $circleColor . '; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; box-shadow: ' . $borderStyle . '; transition: all 0.2s;">';
+                                    $html .= '<div style="width: 40px; height: 40px; border-radius: 50%; background-color: '.$circleBg.'; color: '.$circleColor.'; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; box-shadow: '.$borderStyle.'; transition: all 0.2s;">';
                                     if ($isPassed) {
                                         $html .= '✓';
                                     } else {
                                         $html .= $i;
                                     }
                                     $html .= '</div>';
-                                    $html .= '<div style="margin-top: 8px; font-size: 13px; font-weight: 700; color: ' . ($isCurrent || $isPassed ? '#111827' : '#6b7280') . ';">' . e($stage['label']) . '</div>';
-                                    $html .= '<div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">' . e($stage['desc']) . '</div>';
+                                    $html .= '<div style="margin-top: 8px; font-size: 13px; font-weight: 700; color: '.($isCurrent || $isPassed ? '#111827' : '#6b7280').';">'.e($stage['label']).'</div>';
+                                    $html .= '<div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">'.e($stage['desc']).'</div>';
                                     $html .= '</div>';
 
                                     // Line between steps
                                     if ($i < $count) {
                                         $lineBg = $currentStep > $stepNum ? '#10b981' : '#e5e7eb';
-                                        $html .= '<div style="flex: 1; height: 3px; background-color: ' . $lineBg . '; margin-top: -28px; z-index: 1;"></div>';
+                                        $html .= '<div style="flex: 1; height: 3px; background-color: '.$lineBg.'; margin-top: -28px; z-index: 1;"></div>';
                                     }
                                 }
 
                                 $html .= '</div></div>';
-                                return new \Illuminate\Support\HtmlString($html);
+
+                                return new HtmlString($html);
                             })
                             ->columnSpanFull(),
                     ]),
@@ -142,35 +156,35 @@ class DokumenPengeluaranResource extends Resource
                     ->columnSpanFull()
                     ->visible(fn ($record) => $record?->status === DokumenPengeluaran::STATUS_DIKEMBALIKAN || $record?->riwayatKoreksis()->exists())
                     ->schema([
-                        \Filament\Forms\Components\Placeholder::make('catatan_revisi_display')
+                        Placeholder::make('catatan_revisi_display')
                             ->label('')
                             ->content(function ($record) {
                                 $koreksi = $record?->riwayatKoreksis()->latest()->first();
-                                if (!$koreksi) {
-                                    return new \Illuminate\Support\HtmlString('');
+                                if (! $koreksi) {
+                                    return new HtmlString('');
                                 }
 
                                 $jenisKesalahan = $koreksi->jenisKesalahan?->nama_kesalahan ?? 'Umum';
                                 $catatan = $koreksi->catatan_koreksi ?? '-';
                                 $verifikator = $koreksi->pengoreksi?->name ?? 'Verifikator';
-                                $tanggal = $koreksi->tanggal_koreksi ? \Carbon\Carbon::parse($koreksi->tanggal_koreksi)->translatedFormat('d M Y H:i') : '-';
+                                $tanggal = $koreksi->tanggal_koreksi ? Carbon::parse($koreksi->tanggal_koreksi)->translatedFormat('d M Y H:i') : '-';
 
-                                return new \Illuminate\Support\HtmlString('
+                                return new HtmlString('
                                     <div style="padding: 16px 20px; border-radius: 12px; background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b;">
                                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                             <span style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; color: #dc2626;">
-                                                ⚠️ Dokumen Dikembalikan untuk Direvisi
+                                                Dokumen Dikembalikan untuk Direvisi
                                             </span>
                                             <span style="font-size: 11px; color: #991b1b; background: #fee2e2; padding: 2px 8px; border-radius: 6px; font-weight: 600;">
-                                                Versi ' . $koreksi->versi_ke . ' • ' . e($tanggal) . '
+                                                Versi '.$koreksi->versi_ke.' • '.e($tanggal).'
                                             </span>
                                         </div>
                                         <div style="font-size: 13px; margin-bottom: 6px; color: #7f1d1d;">
-                                            <strong>Kategori Kesalahan:</strong> <span style="display: inline-block; padding: 1px 8px; background: #ffffff; border: 1px solid #fca5a5; border-radius: 4px; font-weight: 600; color: #b91c1c;">' . e($jenisKesalahan) . '</span>
+                                            <strong>Kategori Kesalahan:</strong> <span style="display: inline-block; padding: 1px 8px; background: #ffffff; border: 1px solid #fca5a5; border-radius: 4px; font-weight: 600; color: #b91c1c;">'.e($jenisKesalahan).'</span>
                                         </div>
                                         <div style="font-size: 13px; color: #7f1d1d; line-height: 1.5; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fecaca;">
-                                            <strong>Catatan Verifikator (' . e($verifikator) . '):</strong><br>
-                                            ' . nl2br(e($catatan)) . '
+                                            <strong>Catatan Verifikator ('.e($verifikator).'):</strong><br>
+                                            '.nl2br(e($catatan)).'
                                         </div>
                                     </div>
                                 ');
@@ -182,35 +196,36 @@ class DokumenPengeluaranResource extends Resource
                     ->schema([
                         \Filament\Schemas\Components\Grid::make(3)
                             ->schema([
-                                \Filament\Infolists\Components\TextEntry::make('kode_dokumen')
+                                TextEntry::make('kode_dokumen')
                                     ->label('Kode Dokumen')
                                     ->weight('bold'),
-                                \Filament\Infolists\Components\TextEntry::make('status')
+                                TextEntry::make('status')
                                     ->label('Status')
                                     ->badge()
                                     ->color(fn (string $state): string => match ($state) {
-                                        \App\Models\DokumenPengeluaran::STATUS_DIAJUKAN => 'warning',
-                                        \App\Models\DokumenPengeluaran::STATUS_DIVERIFIKASI => 'info',
-                                        \App\Models\DokumenPengeluaran::STATUS_DIKEMBALIKAN => 'danger',
-                                        \App\Models\DokumenPengeluaran::STATUS_DISAHKAN => 'success',
-                                        \App\Models\DokumenPengeluaran::STATUS_DIBAYAR => 'success',
-                                        \App\Models\DokumenPengeluaran::STATUS_DIARSIPKAN => 'gray',
+                                        DokumenPengeluaran::STATUS_DRAFT => 'gray',
+                                        DokumenPengeluaran::STATUS_DIAJUKAN => 'warning',
+                                        DokumenPengeluaran::STATUS_DIVERIFIKASI => 'info',
+                                        DokumenPengeluaran::STATUS_DIKEMBALIKAN => 'danger',
+                                        DokumenPengeluaran::STATUS_DISAHKAN => 'success',
+                                        DokumenPengeluaran::STATUS_DIBAYAR => 'success',
+                                        DokumenPengeluaran::STATUS_DIARSIPKAN => 'gray',
                                         default => 'gray',
                                     }),
-                                \Filament\Infolists\Components\TextEntry::make('tanggal_ajuan')
+                                TextEntry::make('tanggal_ajuan')
                                     ->label('Tanggal Pengajuan')
                                     ->date('d M Y'),
-                                \Filament\Infolists\Components\TextEntry::make('bidang.nama_bidang')
+                                TextEntry::make('bidang.nama_bidang')
                                     ->label('Bidang / Unit Kerja'),
-                                \Filament\Infolists\Components\TextEntry::make('jenis_dokumen')
+                                TextEntry::make('jenis_dokumen')
                                     ->label('Jenis Dokumen'),
-                                \Filament\Infolists\Components\TextEntry::make('sumber_dana')
+                                TextEntry::make('sumber_dana')
                                     ->label('Sumber Dana')
                                     ->badge(),
-                                \Filament\Infolists\Components\TextEntry::make('nominal')
+                                TextEntry::make('nominal')
                                     ->label('Nominal Pengajuan')
-                                    ->formatStateUsing(fn ($state) => filled($state) ? 'Rp ' . number_format((float) $state, 0, ',', '.') : '-'),
-                                \Filament\Infolists\Components\TextEntry::make('keterangan')
+                                    ->formatStateUsing(fn ($state) => filled($state) ? 'Rp '.number_format((float) $state, 0, ',', '.') : '-'),
+                                TextEntry::make('keterangan')
                                     ->label('Keterangan')
                                     ->placeholder('Tidak ada keterangan.')
                                     ->columnSpanFull(),
@@ -219,7 +234,7 @@ class DokumenPengeluaranResource extends Resource
                 \Filament\Schemas\Components\Section::make('Dokumen Lampiran (PDF)')
                     ->columnSpanFull()
                     ->schema([
-                        \Filament\Forms\Components\Placeholder::make('file_path_display')
+                        Placeholder::make('file_path_display')
                             ->label('')
                             ->content(function ($record) {
                                 $files = $record?->file_path;
@@ -229,7 +244,7 @@ class DokumenPengeluaranResource extends Resource
                                 $files = array_filter((array) $files);
 
                                 if (empty($files)) {
-                                    return new \Illuminate\Support\HtmlString('<div style="padding: 16px; text-align: center; font-size: 13px; color: #6b7280; font-style: italic; background-color: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;">Tidak ada file lampiran.</div>');
+                                    return new HtmlString('<div style="padding: 16px; text-align: center; font-size: 13px; color: #6b7280; font-style: italic; background-color: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;">Tidak ada file lampiran.</div>');
                                 }
 
                                 $rows = [];
@@ -237,9 +252,9 @@ class DokumenPengeluaranResource extends Resource
                                     $tipeSumber = is_array($item) ? ($item['tipe_sumber'] ?? null) : null;
                                     $linkDrive = is_array($item) ? ($item['link_drive'] ?? $item['link'] ?? null) : null;
                                     $filePath = is_array($item) ? ($item['file'] ?? null) : (string) $item;
-                                    $judul = (is_array($item) && !empty($item['judul'])) ? $item['judul'] : ('Dokumen ' . ($index + 1));
+                                    $judul = (is_array($item) && ! empty($item['judul'])) ? $item['judul'] : ('Dokumen '.($index + 1));
 
-                                    $isDriveLink = ($tipeSumber === 'link') || filled($linkDrive) || str_starts_with((string)$filePath, 'http://') || str_starts_with((string)$filePath, 'https://');
+                                    $isDriveLink = ($tipeSumber === 'link') || filled($linkDrive) || str_starts_with((string) $filePath, 'http://') || str_starts_with((string) $filePath, 'https://');
 
                                     if ($isDriveLink) {
                                         $url = $linkDrive ?: $filePath;
@@ -254,7 +269,7 @@ class DokumenPengeluaranResource extends Resource
                                         if (empty($filePath)) {
                                             continue;
                                         }
-                                        $url = asset('storage/' . $filePath);
+                                        $url = asset('storage/'.$filePath);
                                         $formatBadge = '<span style="display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: 700; color: #b91c1c; background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 4px;">PDF</span>';
                                         $btnLabel = 'Buka PDF';
                                         $btnStyle = 'color: #2563eb; background-color: #eff6ff; border: 1px solid #bfdbfe;';
@@ -262,30 +277,30 @@ class DokumenPengeluaranResource extends Resource
                                     }
 
                                     $rows[] = '<tr style="border-bottom: 1px solid #e5e7eb;">
-                                        <td style="padding: 12px 16px; text-align: center; font-size: 13px; color: #4b5563; width: 60px;">' . ($index + 1) . '</td>
-                                        <td style="padding: 12px 16px; font-size: 13px; font-weight: 500; color: #111827;">' . e($judul) . '</td>
-                                        <td style="padding: 12px 16px; text-align: center; width: 100px;">' . $formatBadge . '</td>
+                                        <td style="padding: 12px 16px; text-align: center; font-size: 13px; color: #4b5563; width: 60px;">'.($index + 1).'</td>
+                                        <td style="padding: 12px 16px; font-size: 13px; font-weight: 500; color: #111827;">'.e($judul).'</td>
+                                        <td style="padding: 12px 16px; text-align: center; width: 100px;">'.$formatBadge.'</td>
                                         <td style="padding: 12px 16px; text-align: center; width: 140px; white-space: nowrap;">
-                                            <a href="' . e($url) . '" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; ' . $btnStyle . ' border-radius: 6px; text-decoration: none;">' .
-                                                $iconSvg .
-                                                '<span style="margin-left: 3px;">' . e($btnLabel) . '</span>' .
-                                            '</a>' .
-                                        '</td>' .
+                                            <a href="'.e($url).'" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 12px; font-size: 12px; font-weight: 600; '.$btnStyle.' border-radius: 6px; text-decoration: none;">'.
+                                                $iconSvg.
+                                                '<span style="margin-left: 3px;">'.e($btnLabel).'</span>'.
+                                            '</a>'.
+                                        '</td>'.
                                     '</tr>';
                                 }
 
-                                return new \Illuminate\Support\HtmlString('<div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); max-width: 100%;">' .
-                                    '<table style="width: 100%; border-collapse: collapse; text-align: left;">' .
-                                        '<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">' .
-                                            '<tr>' .
-                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 60px; text-align: center;">No</th>' .
-                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em;">Judul / Nama Dokumen</th>' .
-                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 100px; text-align: center;">Format</th>' .
-                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 140px; text-align: center;">Aksi</th>' .
-                                            '</tr>' .
-                                        '</thead>' .
-                                        '<tbody>' . implode('', $rows) . '</tbody>' .
-                                    '</table>' .
+                                return new HtmlString('<div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); max-width: 100%;">'.
+                                    '<table style="width: 100%; border-collapse: collapse; text-align: left;">'.
+                                        '<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">'.
+                                            '<tr>'.
+                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 60px; text-align: center;">No</th>'.
+                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em;">Judul / Nama Dokumen</th>'.
+                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 100px; text-align: center;">Format</th>'.
+                                                '<th style="padding: 10px 16px; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.05em; width: 140px; text-align: center;">Aksi</th>'.
+                                            '</tr>'.
+                                        '</thead>'.
+                                        '<tbody>'.implode('', $rows).'</tbody>'.
+                                    '</table>'.
                                 '</div>');
                             })
                             ->columnSpanFull(),
@@ -296,10 +311,10 @@ class DokumenPengeluaranResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\DokumenPengeluarans\RelationManagers\VerifikasisRelationManager::class,
-            \App\Filament\Resources\DokumenPengeluarans\RelationManagers\RiwayatKoreksisRelationManager::class,
-            \App\Filament\Resources\DokumenPengeluarans\RelationManagers\PengesahansRelationManager::class,
-            \App\Filament\Resources\DokumenPengeluarans\RelationManagers\PembayaransRelationManager::class,
+            VerifikasisRelationManager::class,
+            RiwayatKoreksisRelationManager::class,
+            PengesahansRelationManager::class,
+            PembayaransRelationManager::class,
         ];
     }
 
@@ -308,17 +323,20 @@ class DokumenPengeluaranResource extends Resource
         return [
             'index' => ListDokumenPengeluarans::route('/'),
             'edit' => EditDokumenPengeluaran::route('/{record}/edit'),
-            'view' => \App\Filament\Resources\DokumenPengeluarans\Pages\ViewDokumenPengeluaran::route('/{record}'),
+            'view' => ViewDokumenPengeluaran::route('/{record}'),
         ];
     }
 
-    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
         $user = auth()->user();
 
         if ($user->hasRole('pptk')) {
             $query->where('pptk_id', $user->id);
+        } elseif (! $user->hasAnyRole(['super_admin', 'admin'])) {
+            // Role selain PPTK & Admin tidak melihat dokumen yang masih berupa Draft
+            $query->where('status', '!=', DokumenPengeluaran::STATUS_DRAFT);
         }
 
         // Rekanan hanya melihat dokumen yang sudah dibayar/diarsipkan (read-only view)
