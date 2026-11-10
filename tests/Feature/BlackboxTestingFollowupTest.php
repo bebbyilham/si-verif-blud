@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\DokumenPengeluarans\DokumenPengeluaranResource;
+use App\Filament\Resources\DokumenPengeluarans\Pages\CreateDokumenPengeluaran;
+use App\Filament\Resources\DokumenPengeluarans\Schemas\DokumenPengeluaranForm;
 use App\Filament\Widgets\DokumenChart;
 use App\Models\Bidang;
 use App\Models\DokumenPengeluaran;
@@ -10,6 +12,7 @@ use App\Models\JenisKesalahan;
 use App\Models\RiwayatKoreksi;
 use App\Models\User;
 use App\Models\Verifikasi;
+use Filament\Schemas\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -187,5 +190,34 @@ class BlackboxTestingFollowupTest extends TestCase
 
         $this->assertEquals(2, array_sum($chartData['datasets'][0]['data']));
         $this->assertEquals('Pengajuan Dokumen Bidang Keuangan', $chart->getHeading());
+    }
+
+    public function test_form_schema_contains_reactive_mode_storage_alert(): void
+    {
+        $livewire = new CreateDokumenPengeluaran;
+        $schema = Schema::make($livewire);
+        $configured = DokumenPengeluaranForm::configure($schema);
+        $components = $configured->getComponents();
+
+        $componentNames = array_map(function ($comp) {
+            return method_exists($comp, 'getName') ? $comp->getName() : null;
+        }, $components);
+
+        $this->assertContains('status', $componentNames);
+        $this->assertContains('alert_mode_penyimpanan', $componentNames);
+
+        $alertComponent = collect($components)->first(fn ($c) => method_exists($c, 'getName') && $c->getName() === 'alert_mode_penyimpanan');
+        $this->assertNotNull($alertComponent);
+
+        // Test draft state content via closure
+        $closure = (new \ReflectionProperty($alertComponent, 'getConstantStateUsing'))->getValue($alertComponent);
+        $draftContent = $closure(fn ($field) => $field === 'status' ? DokumenPengeluaran::STATUS_DRAFT : null);
+        $this->assertStringContainsString('ALERT MODE DRAFT', (string) $draftContent);
+        $this->assertStringContainsString('belum diajukan ke Verifikator', (string) $draftContent);
+
+        // Test diajukan state content via closure
+        $diajukanContent = $closure(fn ($field) => $field === 'status' ? DokumenPengeluaran::STATUS_DIAJUKAN : null);
+        $this->assertStringContainsString('ALERT AJUKAN LANGSUNG', (string) $diajukanContent);
+        $this->assertStringContainsString('langsung dikirimkan ke antrean Verifikator', (string) $diajukanContent);
     }
 }

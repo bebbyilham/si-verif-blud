@@ -75,4 +75,5 @@
 | **2026-11-09** | Agent & Memory | Penerapan standar `AGENTS.md`, inisialisasi memori persisten `MEMORY.md`, `GEMINI.md`, dan aturan sinkronisasi `.agents/rules/claude-mem.md`. |
 | **2026-11-09** | Blackbox Follow-up | Implementasi penyimpanan `draft` (`STATUS_DRAFT` + `ajukan_draft`), aksi mundur status (`verifikasi_kembalikan` lintas tahap & `kembalikan_tahap`), isolasi `DokumenChart` untuk PPTK Keuangan, serta perbaikan kalkulasi `StatsOverviewWidget` di seluruh role. |
 | **2026-11-09** | Password Management | Penambahan halaman `EditProfile` (`/admin/profile`) untuk ubah password mandiri semua role serta aksi `reset_password` pada `UsersTable` & perbaikan `UserForm` untuk Super Admin/Admin. |
+| **2026-11-10** | Draft & Submit Alert | Implementasi live in-form alert banner reaktif (`alert_mode_penyimpanan`) dan toast alert notification kustom saat simpan Draft vs Ajukan Langsung di `DokumenPengeluaranForm`, `ListDokumenPengeluarans`, `CreateDokumenPengeluaran`, dan `EditDokumenPengeluaran`. |
 

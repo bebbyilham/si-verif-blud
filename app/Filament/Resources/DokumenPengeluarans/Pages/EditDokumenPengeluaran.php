@@ -21,6 +21,31 @@ class EditDokumenPengeluaran extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
+    protected function getSavedNotification(): ?Notification
+    {
+        $record = $this->getRecord();
+
+        // Jika notifikasi khusus sudah dikirimkan di afterSave, hindari notifikasi ganda
+        if (
+            (auth()->user()?->hasRole('pptk') && $this->previousStatus === DokumenPengeluaran::STATUS_DRAFT && $record->status === DokumenPengeluaran::STATUS_DIAJUKAN) ||
+            (auth()->user()?->hasRole('pptk') && $record->status === DokumenPengeluaran::STATUS_DIKEMBALIKAN)
+        ) {
+            return null;
+        }
+
+        if ($record->status === DokumenPengeluaran::STATUS_DRAFT) {
+            return Notification::make()
+                ->warning()
+                ->title('Perubahan Draft Disimpan')
+                ->body('Dokumen '.$record->kode_dokumen.' berhasil diperbarui dan tetap tersimpan sebagai Draft.');
+        }
+
+        return Notification::make()
+            ->success()
+            ->title('Dokumen Berhasil Disimpan')
+            ->body('Dokumen '.$record->kode_dokumen.' berhasil diperbarui.');
+    }
+
     protected function beforeSave(): void
     {
         $this->previousStatus = $this->getRecord()->getOriginal('status') ?? $this->getRecord()->status;

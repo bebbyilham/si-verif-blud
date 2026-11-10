@@ -46,6 +46,43 @@ class DokumenPengeluaranForm
                     ->visible(fn ($record) => ! $record || in_array($record->status, [DokumenPengeluaran::STATUS_DRAFT, DokumenPengeluaran::STATUS_DIAJUKAN]))
                     ->helperText('Pilih "Simpan sebagai Draft" jika ingin menyimpan data terlebih dahulu tanpa langsung mengirim ke Verifikator.')
                     ->columnSpanFull(),
+                Placeholder::make('alert_mode_penyimpanan')
+                    ->hiddenLabel()
+                    ->content(function ($get) {
+                        $status = $get('status') ?? DokumenPengeluaran::STATUS_DIAJUKAN;
+
+                        if ($status === DokumenPengeluaran::STATUS_DRAFT) {
+                            return new HtmlString('
+                                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 11px 15px; background-color: #fffbeb; border: 1.5px solid #f59e0b; border-left: 5px solid #d97706; border-radius: 8px; box-shadow: 0 1px 3px rgba(217, 119, 6, 0.1); margin-top: -6px; margin-bottom: 6px;">
+                                    <div style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background-color: #fef3c7; color: #d97706; flex-shrink: 0; margin-top: 1px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 17px; height: 17px;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                        </svg>
+                                    </div>
+                                    <div style="font-size: 12.5px; line-height: 1.45; color: #92400e;">
+                                        <span style="font-weight: 800; letter-spacing: 0.02em; color: #b45309;">ALERT MODE DRAFT:</span>
+                                        Dokumen ini akan disimpan secara lokal sebagai <strong>Draft</strong> dan <u>belum diajukan ke Verifikator</u>. Pengunggahan berkas lampiran bersifat opsional dan dapat Anda lengkapi sebelum diajukan resmi melalui menu tab <em>Draft</em>.
+                                    </div>
+                                </div>
+                            ');
+                        }
+
+                        return new HtmlString('
+                            <div style="display: flex; align-items: flex-start; gap: 12px; padding: 11px 15px; background-color: #eef2ff; border: 1.5px solid #6366f1; border-left: 5px solid #4f46e5; border-radius: 8px; box-shadow: 0 1px 3px rgba(79, 70, 229, 0.1); margin-top: -6px; margin-bottom: 6px;">
+                                <div style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background-color: #e0e7ff; color: #4338ca; flex-shrink: 0; margin-top: 1px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 17px; height: 17px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.126A59.768 59.768 0 0 1 21.485 12 59.77 59.77 0 0 1 3.27 20.876L5.999 12Zm0 0h7.5" />
+                                    </svg>
+                                </div>
+                                <div style="font-size: 12.5px; line-height: 1.45; color: #312e81;">
+                                    <span style="font-weight: 800; letter-spacing: 0.02em; color: #4338ca;">ALERT AJUKAN LANGSUNG:</span>
+                                    Dokumen ini akan <strong>langsung dikirimkan ke antrean Verifikator</strong> setelah disimpan. Notifikasi sistem otomatis terkirim. Pastikan minimal 1 berkas lampiran (PDF maks 1MB atau link Google Drive) telah lengkap & valid.
+                                </div>
+                            </div>
+                        ');
+                    })
+                    ->visible(fn ($record) => ! $record || in_array($record->status, [DokumenPengeluaran::STATUS_DRAFT, DokumenPengeluaran::STATUS_DIAJUKAN]))
+                    ->columnSpanFull(),
                 TextInput::make('kode_dokumen')
                     ->disabled()
                     ->dehydrated(false)
