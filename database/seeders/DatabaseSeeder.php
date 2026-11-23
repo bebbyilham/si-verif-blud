@@ -38,6 +38,11 @@ class DatabaseSeeder extends Seeder
             }
         }
 
+        \Spatie\Permission\Models\Permission::firstOrCreate([
+            'name' => 'ResetData:DokumenPengeluaran',
+            'guard_name' => 'web',
+        ]);
+
         $widgets = ['DokumenChart', 'PengeluaranChart', 'KoreksiPerBidangChart', 'WaktuVerifikasiChart', 'StatsOverviewWidget'];
         foreach ($widgets as $widget) {
             \Spatie\Permission\Models\Permission::firstOrCreate([
@@ -50,7 +55,9 @@ class DatabaseSeeder extends Seeder
 
         // Assign Permissions
         $roles['super_admin']?->syncPermissions($allPermissions);
-        $roles['admin']?->syncPermissions($allPermissions);
+        $roles['admin']?->syncPermissions(
+            $allPermissions->reject(fn ($permission) => $permission->name === 'ResetData:DokumenPengeluaran')
+        );
 
         $roles['pptk']?->syncPermissions([
             'ViewAny:DokumenPengeluaran', 'View:DokumenPengeluaran', 'Create:DokumenPengeluaran', 'Update:DokumenPengeluaran',
