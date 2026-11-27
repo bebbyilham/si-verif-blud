@@ -287,4 +287,60 @@ class BlackboxTestingFollowupTest extends TestCase
             ->assertSee('inputmode="numeric"', false)
             ->assertDontSee('x-mask:dynamic="$money($input, \\"', false);
     }
+
+    public function test_dokumen_pengeluaran_supports_long_jenis_dokumen_and_dynamic_sumber_dana(): void
+    {
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        foreach (['ViewAny:DokumenPengeluaran', 'Create:DokumenPengeluaran'] as $permissionName) {
+            Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
+        }
+
+        Role::findByName('pptk', 'web')->givePermissionTo([
+            'ViewAny:DokumenPengeluaran',
+            'Create:DokumenPengeluaran',
+        ]);
+
+        $bidang = Bidang::create([
+            'nama_bidang' => 'Umum',
+            'pptk_penanggung_jawab' => 'PPTK Umum',
+        ]);
+
+        $longJenis = 'Belanja Makan dan Minuman pelatihan, workshop, sosialisasi dan Bimtek (Swakelola)';
+        JenisDokumen::create([
+            'kode_jenis' => $longJenis,
+            'nama_jenis' => $longJenis,
+        ]);
+
+        SumberDana::create([
+            'nama' => 'APBN / Hibah',
+        ]);
+
+        $pptk = User::factory()->create([
+            'bidang_id' => $bidang->id,
+            'status_aktif' => true,
+        ]);
+        $pptk->assignRole('pptk');
+
+        $this->actingAs($pptk);
+
+        Livewire::test(ListDokumenPengeluarans::class)
+            ->callAction('create', data: [
+                'status' => DokumenPengeluaran::STATUS_DRAFT,
+                'bidang_id' => $bidang->id,
+                'jenis_dokumen' => $longJenis,
+                'sumber_dana' => 'APBN / Hibah',
+                'nominal' => '14.985.000',
+                'tanggal_ajuan' => now()->toDateString(),
+                'file_path' => [],
+            ])
+            ->assertHasNoActionErrors();
+
+        $this->assertDatabaseHas('dokumen_pengeluarans', [
+            'bidang_id' => $bidang->id,
+            'jenis_dokumen' => $longJenis,
+            'sumber_dana' => 'APBN / Hibah',
+            'nominal' => 14985000,
+        ]);
+    }
 }
