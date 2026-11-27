@@ -4,16 +4,23 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\DokumenPengeluarans\DokumenPengeluaranResource;
 use App\Filament\Resources\DokumenPengeluarans\Pages\CreateDokumenPengeluaran;
+use App\Filament\Resources\DokumenPengeluarans\Pages\EditDokumenPengeluaran;
+use App\Filament\Resources\DokumenPengeluarans\Pages\ListDokumenPengeluarans;
 use App\Filament\Resources\DokumenPengeluarans\Schemas\DokumenPengeluaranForm;
 use App\Filament\Widgets\DokumenChart;
 use App\Models\Bidang;
 use App\Models\DokumenPengeluaran;
+use App\Models\JenisDokumen;
 use App\Models\JenisKesalahan;
 use App\Models\RiwayatKoreksi;
+use App\Models\SumberDana;
 use App\Models\User;
 use App\Models\Verifikasi;
+use Filament\Facades\Filament;
 use Filament\Schemas\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -219,5 +226,65 @@ class BlackboxTestingFollowupTest extends TestCase
         $diajukanContent = $closure(fn ($field) => $field === 'status' ? DokumenPengeluaran::STATUS_DIAJUKAN : null);
         $this->assertStringContainsString('ALERT AJUKAN LANGSUNG', (string) $diajukanContent);
         $this->assertStringContainsString('langsung dikirimkan ke antrean Verifikator', (string) $diajukanContent);
+    }
+
+    public function test_nominal_money_mask_renders_valid_alpine_expression_and_dehydrates_rupiah_format(): void
+    {
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        foreach (['ViewAny:DokumenPengeluaran', 'Create:DokumenPengeluaran', 'Update:DokumenPengeluaran'] as $permissionName) {
+            Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
+        }
+
+        Role::findByName('pptk', 'web')->givePermissionTo([
+            'ViewAny:DokumenPengeluaran',
+            'Create:DokumenPengeluaran',
+            'Update:DokumenPengeluaran',
+        ]);
+
+        $bidang = Bidang::create([
+            'nama_bidang' => 'Keuangan',
+            'pptk_penanggung_jawab' => 'PPTK Keuangan',
+        ]);
+
+        JenisDokumen::create([
+            'kode_jenis' => 'ATK',
+            'nama_jenis' => 'Belanja ATK',
+        ]);
+
+        SumberDana::create([
+            'nama' => 'BLUD',
+        ]);
+
+        $pptk = User::factory()->create([
+            'bidang_id' => $bidang->id,
+            'status_aktif' => true,
+        ]);
+        $pptk->assignRole('pptk');
+
+        $this->actingAs($pptk);
+
+        Livewire::test(ListDokumenPengeluarans::class)
+            ->callAction('create', data: [
+                'status' => DokumenPengeluaran::STATUS_DRAFT,
+                'bidang_id' => $bidang->id,
+                'jenis_dokumen' => 'ATK',
+                'sumber_dana' => 'BLUD',
+                'nominal' => '2.500.000',
+                'tanggal_ajuan' => now()->toDateString(),
+                'file_path' => [],
+            ])
+            ->assertHasNoActionErrors();
+
+        $dokumen = DokumenPengeluaran::where('bidang_id', $bidang->id)
+            ->where('jenis_dokumen', 'ATK')
+            ->firstOrFail();
+
+        $this->assertEquals(2500000.0, (float) $dokumen->nominal);
+
+        Livewire::test(EditDokumenPengeluaran::class, ['record' => $dokumen->getRouteKey()])
+            ->assertSee('x-mask:dynamic="$money($input, \',\', \'.\', 0)"', false)
+            ->assertSee('inputmode="numeric"', false)
+            ->assertDontSee('x-mask:dynamic="$money($input, \\"', false);
     }
 }

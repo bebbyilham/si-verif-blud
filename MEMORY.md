@@ -28,8 +28,8 @@
   - Event `static::created` pada [`DokumenPengeluaran.php`](file:///c:/laragon/www/si-verif-blud/app/Models/DokumenPengeluaran.php) mengirimkan notifikasi ke role `verifikator`. Guard `if (!auth()->check()) return;` wajib dipertahankan agar eksekusi `php artisan db:seed` (`DummyDokumenSeeder`) atau CLI Tinker tidak gagal.
 - **Format Kode Dokumen Otomatis**:
   - Dibangkitkan otomatis saat `creating` dengan pola `BLUD-YYYY-MM-XXXX` (mis. `BLUD-2026-11-0001`).
-- **Penanganan Input Nominal (`RawJs` Money Mask)**:
-  - Field `nominal` di [`DokumenPengeluaranForm.php`](file:///c:/laragon/www/si-verif-blud/app/Filament/Resources/DokumenPengeluarans/Schemas/DokumenPengeluaranForm.php) menggunakan `mask(RawJs::make('$money($input, ".", ",", 0)'))` dengan `stripCharacters('.')` dan `dehydrateStateUsing` yang membersihkan titik/koma sebelum disimpan sebagai `float`/`decimal(15,2)`.
+- **Penanganan Input Nominal (`RawJs` Money Mask & Jebakan Kutip Ganda)**:
+  - Field `nominal` di [`DokumenPengeluaranForm.php`](file:///c:/laragon/www/si-verif-blud/app/Filament/Resources/DokumenPengeluarans/Schemas/DokumenPengeluaranForm.php) menggunakan `mask(RawJs::make('$money($input, \',\', \'.\', 0)'))` (urutan parameter Alpine Mask: `delimiter` desimal `,`, pemisah ribuan `.`, presisi `0`), `inputMode('numeric')`, `stripCharacters('.')`, dan `dehydrateStateUsing`. **Jangan pernah** menggunakan kutip ganda (`"`) di dalam `RawJs::make(...)` untuk `->mask()` karena `ComponentAttributeBag::__toString()` mengubah `"` menjadi `\"` di dalam atribut HTML `x-mask:dynamic="..."`, yang memotong atribut dan menyebabkan `Alpine Expression Error: Invalid or unexpected token`.
 - **Isolasi Data & Tab Default per Role**:
   - `DokumenPengeluaranResource::getEloquentQuery()` membatasi `pptk` hanya pada `pptk_id = $user->id` dan `rekanan` hanya pada status `dibayar` & `diarsipkan`.
   - `ListDokumenPengeluarans::getDefaultActiveTab()` mengarahkan tab awal secara cerdas: `verifikator` ➔ `'diajukan'`, `ppk` ➔ `'diverifikasi'`, `bendahara` ➔ `'disahkan'`, lainnya ➔ `'semua'`.
@@ -77,4 +77,5 @@
 | **2026-11-09** | Password Management | Penambahan halaman `EditProfile` (`/admin/profile`) untuk ubah password mandiri semua role serta aksi `reset_password` pada `UsersTable` & perbaikan `UserForm` untuk Super Admin/Admin. |
 | **2026-11-10** | Draft & Submit Alert | Implementasi live in-form alert banner reaktif (`alert_mode_penyimpanan`) dan toast alert notification kustom saat simpan Draft vs Ajukan Langsung di `DokumenPengeluaranForm`, `ListDokumenPengeluarans`, `CreateDokumenPengeluaran`, dan `EditDokumenPengeluaran`. |
 | **2026-11-23** | Reset Data & Shield RBAC | Penambahan izin granular `ResetData:DokumenPengeluaran` di Filament Shield (`config/filament-shield.php`, `DokumenPengeluaranPolicy`, migrasi idempoten, `DatabaseSeeder`), service `DokumenPengeluaranResetService`, aksi `reset_data_dokumen` berkonfirmasi 3 lapis di `ListDokumenPengeluarans`, serta 5 feature tests (`ResetDokumenPengeluaranTest`). |
+| **2026-11-27** | Bugfix Alpine Mask | Perbaikan `Alpine Expression Error: Invalid or unexpected token` pada `nominal` di `DokumenPengeluaranForm` dengan mengganti kutip ganda menjadi kutip tunggal dan memperbaiki urutan pemisah desimal/ribuan Rupiah pada `RawJs::make('$money($input, \',\', \'.\', 0)')`. |
 
