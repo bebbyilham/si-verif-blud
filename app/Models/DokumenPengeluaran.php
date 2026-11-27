@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class DokumenPengeluaran extends Model
@@ -89,6 +90,34 @@ class DokumenPengeluaran extends Model
         }
 
         return false;
+    }
+
+    public function scopeForPptk(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $scoped) use ($user): void {
+            $scoped->where('pptk_id', $user->id);
+
+            if (filled($user->bidang_id)) {
+                $scoped->orWhere('bidang_id', $user->bidang_id);
+            }
+        });
+    }
+
+    public static function resolvePptkIdForBidang(?int $bidangId, ?int $fallbackUserId = null): ?int
+    {
+        if (blank($bidangId)) {
+            return $fallbackUserId;
+        }
+
+        $baseQuery = User::query()
+            ->where('bidang_id', $bidangId)
+            ->whereHas('roles', fn (Builder $query) => $query->where('name', 'pptk'));
+
+        return (clone $baseQuery)
+            ->where('status_aktif', true)
+            ->value('id')
+            ?? $baseQuery->value('id')
+            ?? $fallbackUserId;
     }
 
     public function bidang()

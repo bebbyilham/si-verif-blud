@@ -41,7 +41,7 @@ class DokumenChart extends ChartWidget
             ->where('status', '!=', DokumenPengeluaran::STATUS_DRAFT);
 
         if ($user && $user->hasRole('pptk')) {
-            $baseQuery->where('pptk_id', $user->id);
+            $baseQuery->forPptk($user);
         }
 
         $startDate = $this->filters['startDate'] ?? null;

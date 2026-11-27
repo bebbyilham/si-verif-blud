@@ -60,7 +60,17 @@ class ViewDokumenPengeluaran extends ViewRecord
                         return;
                     }
 
-                    $record->update(['status' => DokumenPengeluaran::STATUS_DIAJUKAN]);
+                    $updateData = ['status' => DokumenPengeluaran::STATUS_DIAJUKAN];
+                    if (auth()->user()?->hasRole('pptk') && $record->pptk_id !== auth()->id()) {
+                        $updateData['pptk_id'] = auth()->id();
+                    } elseif (auth()->user()?->hasAnyRole(['super_admin', 'admin'])) {
+                        $resolvedPptkId = DokumenPengeluaran::resolvePptkIdForBidang($record->bidang_id, $record->pptk_id);
+                        if ($resolvedPptkId && $resolvedPptkId !== $record->pptk_id) {
+                            $updateData['pptk_id'] = $resolvedPptkId;
+                        }
+                    }
+
+                    $record->update($updateData);
 
                     $verifikators = User::role('verifikator')->get();
                     if ($verifikators->isNotEmpty()) {
@@ -94,7 +104,17 @@ class ViewDokumenPengeluaran extends ViewRecord
                 ])
                 ->action(function (array $data) {
                     $record = $this->getRecord();
-                    $record->update(['status' => DokumenPengeluaran::STATUS_DIAJUKAN]);
+                    $updateData = ['status' => DokumenPengeluaran::STATUS_DIAJUKAN];
+                    if (auth()->user()?->hasRole('pptk') && $record->pptk_id !== auth()->id()) {
+                        $updateData['pptk_id'] = auth()->id();
+                    } elseif (auth()->user()?->hasAnyRole(['super_admin', 'admin'])) {
+                        $resolvedPptkId = DokumenPengeluaran::resolvePptkIdForBidang($record->bidang_id, $record->pptk_id);
+                        if ($resolvedPptkId && $resolvedPptkId !== $record->pptk_id) {
+                            $updateData['pptk_id'] = $resolvedPptkId;
+                        }
+                    }
+
+                    $record->update($updateData);
 
                     // Notifikasi ke Verifikator
                     $verifikators = User::role('verifikator')->get();

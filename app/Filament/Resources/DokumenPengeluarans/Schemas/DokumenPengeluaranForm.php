@@ -96,7 +96,21 @@ class DokumenPengeluaranForm
                     ->dehydrated()
                     ->required(),
                 Hidden::make('pptk_id')
-                    ->default(fn () => auth()->id()),
+                    ->default(fn () => auth()->id())
+                    ->dehydrateStateUsing(function ($state, $get) {
+                        $user = auth()->user();
+
+                        if ($user?->hasRole('pptk')) {
+                            return $user->id;
+                        }
+
+                        $bidangId = filled($get('bidang_id')) ? (int) $get('bidang_id') : null;
+
+                        return DokumenPengeluaran::resolvePptkIdForBidang(
+                            $bidangId,
+                            filled($state) ? (int) $state : $user?->id,
+                        );
+                    }),
                 Select::make('jenis_dokumen')
                     ->options(fn () => JenisDokumen::pluck('nama_jenis', 'kode_jenis')->toArray())
                     ->searchable()

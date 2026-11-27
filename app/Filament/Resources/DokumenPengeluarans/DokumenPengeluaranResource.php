@@ -17,6 +17,8 @@ use Carbon\Carbon;
 use Filament\Forms\Components\Placeholder;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -52,7 +54,7 @@ class DokumenPengeluaranResource extends Resource
         return $schema
             ->columns(1)
             ->components([
-                \Filament\Schemas\Components\Section::make('Timeline Status Dokumen')
+                Section::make('Timeline Status Dokumen')
                     ->columnSpanFull()
                     ->schema([
                         Placeholder::make('timeline_visual')
@@ -152,7 +154,7 @@ class DokumenPengeluaranResource extends Resource
                             })
                             ->columnSpanFull(),
                     ]),
-                \Filament\Schemas\Components\Section::make('Catatan Revisi / Pengembalian')
+                Section::make('Catatan Revisi / Pengembalian')
                     ->columnSpanFull()
                     ->visible(fn ($record) => $record?->status === DokumenPengeluaran::STATUS_DIKEMBALIKAN || $record?->riwayatKoreksis()->exists())
                     ->schema([
@@ -191,10 +193,10 @@ class DokumenPengeluaranResource extends Resource
                             })
                             ->columnSpanFull(),
                     ]),
-                \Filament\Schemas\Components\Section::make('Detail Dokumen Pengeluaran')
+                Section::make('Detail Dokumen Pengeluaran')
                     ->columnSpanFull()
                     ->schema([
-                        \Filament\Schemas\Components\Grid::make(3)
+                        Grid::make(3)
                             ->schema([
                                 TextEntry::make('kode_dokumen')
                                     ->label('Kode Dokumen')
@@ -231,7 +233,7 @@ class DokumenPengeluaranResource extends Resource
                                     ->columnSpanFull(),
                             ]),
                     ]),
-                \Filament\Schemas\Components\Section::make('Dokumen Lampiran (PDF)')
+                Section::make('Dokumen Lampiran (PDF)')
                     ->columnSpanFull()
                     ->schema([
                         Placeholder::make('file_path_display')
@@ -333,7 +335,7 @@ class DokumenPengeluaranResource extends Resource
         $user = auth()->user();
 
         if ($user->hasRole('pptk')) {
-            $query->where('pptk_id', $user->id);
+            $query->forPptk($user);
         } elseif (! $user->hasAnyRole(['super_admin', 'admin'])) {
             // Role selain PPTK & Admin tidak melihat dokumen yang masih berupa Draft
             $query->where('status', '!=', DokumenPengeluaran::STATUS_DRAFT);

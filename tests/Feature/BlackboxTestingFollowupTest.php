@@ -343,4 +343,85 @@ class BlackboxTestingFollowupTest extends TestCase
             'nominal' => 14985000,
         ]);
     }
+
+    public function test_admin_created_and_legacy_drafts_appear_for_matching_bidang_pptk_and_sync_pptk_id(): void
+    {
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        foreach (['ViewAny:DokumenPengeluaran', 'View:DokumenPengeluaran', 'Create:DokumenPengeluaran', 'Update:DokumenPengeluaran'] as $permissionName) {
+            Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
+        }
+
+        Role::findByName('super_admin', 'web')->givePermissionTo(Permission::all());
+        Role::findByName('pptk', 'web')->givePermissionTo([
+            'ViewAny:DokumenPengeluaran',
+            'View:DokumenPengeluaran',
+            'Create:DokumenPengeluaran',
+            'Update:DokumenPengeluaran',
+        ]);
+
+        $bidangUmum = Bidang::create(['nama_bidang' => 'Umum', 'pptk_penanggung_jawab' => 'PPTK Umum']);
+        $bidangKeuangan = Bidang::create(['nama_bidang' => 'Keuangan', 'pptk_penanggung_jawab' => 'PPTK Keuangan']);
+
+        JenisDokumen::create(['kode_jenis' => 'ATK', 'nama_jenis' => 'Belanja ATK']);
+        SumberDana::create(['nama' => 'BLUD']);
+
+        $superAdmin = User::factory()->create(['bidang_id' => null, 'status_aktif' => true]);
+        $superAdmin->assignRole('super_admin');
+
+        $pptkUmum = User::factory()->create(['bidang_id' => $bidangUmum->id, 'status_aktif' => true]);
+        $pptkUmum->assignRole('pptk');
+
+        $pptkKeuangan = User::factory()->create(['bidang_id' => $bidangKeuangan->id, 'status_aktif' => true]);
+        $pptkKeuangan->assignRole('pptk');
+
+        // 1. Super Admin membuat draft untuk Bidang Umum -> pptk_id otomatis diarahkan ke PPTK Umum
+        $this->actingAs($superAdmin);
+
+        Livewire::test(ListDokumenPengeluarans::class)
+            ->callAction('create', data: [
+                'status' => DokumenPengeluaran::STATUS_DRAFT,
+                'bidang_id' => $bidangUmum->id,
+                'jenis_dokumen' => 'ATK',
+                'sumber_dana' => 'BLUD',
+                'nominal' => '5.000.000',
+                'tanggal_ajuan' => now()->toDateString(),
+                'file_path' => [],
+            ])
+            ->assertHasNoActionErrors();
+
+        $adminCreatedDraft = DokumenPengeluaran::where('bidang_id', $bidangUmum->id)->firstOrFail();
+        $this->assertEquals($pptkUmum->id, $adminCreatedDraft->pptk_id);
+
+        // 2. Draft lama yang sudah terlanjur tersimpan dengan pptk_id = superAdmin tetapi bidang_id = Bidang Umum
+        $legacyDraft = DokumenPengeluaran::create([
+            'bidang_id' => $bidangUmum->id,
+            'pptk_id' => $superAdmin->id,
+            'jenis_dokumen' => 'ATK',
+            'sumber_dana' => 'BLUD',
+            'nominal' => 7500000,
+            'tanggal_ajuan' => now()->toDateString(),
+            'status' => DokumenPengeluaran::STATUS_DRAFT,
+            'file_path' => [
+                ['tipe_sumber' => 'link', 'judul' => 'Lampiran', 'link_drive' => 'https://drive.google.com/file/d/test/view'],
+            ],
+        ]);
+
+        // PPTK Umum melihat kedua draft tersebut pada query resource & tabel
+        $this->actingAs($pptkUmum);
+        $this->assertEquals(2, DokumenPengeluaranResource::getEloquentQuery()->count());
+
+        Livewire::test(ListDokumenPengeluarans::class)
+            ->assertCanSeeTableRecords([$adminCreatedDraft, $legacyDraft])
+            ->callTableAction('ajukan_draft', $legacyDraft);
+
+        // Setelah diajukan PPTK Umum, status menjadi diajukan & pptk_id ikut tersinkron ke PPTK Umum
+        $legacyDraft->refresh();
+        $this->assertEquals(DokumenPengeluaran::STATUS_DIAJUKAN, $legacyDraft->status);
+        $this->assertEquals($pptkUmum->id, $legacyDraft->pptk_id);
+
+        // Isolasi bidang tetap terjaga: PPTK Keuangan tidak melihat dokumen Bidang Umum
+        $this->actingAs($pptkKeuangan);
+        $this->assertEquals(0, DokumenPengeluaranResource::getEloquentQuery()->count());
+    }
 }

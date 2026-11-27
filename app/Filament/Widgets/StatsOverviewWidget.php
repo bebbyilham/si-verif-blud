@@ -110,9 +110,9 @@ class StatsOverviewWidget extends BaseStatsOverviewWidget
     private function getPptkStats(): array
     {
         $user = auth()->user();
-        $myDocs = $this->queryWithFilter(excludeDraft: true)->where('pptk_id', $user->id);
+        $myDocs = $this->queryWithFilter(excludeDraft: true)->forPptk($user);
         $draftCount = $this->queryWithFilter(excludeDraft: false)
-            ->where('pptk_id', $user->id)
+            ->forPptk($user)
             ->where('status', DokumenPengeluaran::STATUS_DRAFT)
             ->count();
 
